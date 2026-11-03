@@ -35,12 +35,18 @@ class WashPeakRipple(WashFamilyEffect):
         config = self._config
         now = self.now
         hits = self.consume_onsets()
-        if hits and self._peak_strength >= config["threshold"] and now - self._last_wave >= config["cooldown"]:
+        if (
+            hits
+            and self._peak_strength >= config["threshold"]
+            and now - self._last_wave >= config["cooldown"]
+        ):
             count = self.pixel_count
             origin = config["origin"]
             if origin == "Center":
                 location = (count - 1) / 2
-            elif origin == "Right" or (origin == "Alternate Edges" and self._wave_index % 2):
+            elif origin == "Right" or (
+                origin == "Alternate Edges" and self._wave_index % 2
+            ):
                 location = count - 1
             elif origin == "Random":
                 location = int(self._rng.integers(count))

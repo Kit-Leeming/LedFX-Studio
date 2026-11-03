@@ -2,7 +2,7 @@
 
 import logging
 
-from aiohttp import web
+from aiohttp import BodyPartReader, web
 
 from ledfx import assets
 from ledfx.api import RestEndpoint
@@ -32,11 +32,9 @@ class AssetsEndpoint(RestEndpoint):
         try:
             asset_list = assets.list_assets(self._ledfx.config_dir)
             return await self.bare_request_success({"assets": asset_list})
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             _LOGGER.warning("Failed to list assets: %s", e)
-            return await self.internal_error(
-                message=f"Failed to list assets: {e}"
-            )
+            return await self.internal_error(message=f"Failed to list assets: {e}")
 
     async def post(self, request: web.Request) -> web.Response:
         """
@@ -60,6 +58,12 @@ class AssetsEndpoint(RestEndpoint):
             if part is None:
                 break
 
+            if not isinstance(part, BodyPartReader):
+                return await self.invalid_request(
+                    message="Nested multipart uploads are not supported",
+                    resp_code=400,
+                )
+
             if part.name == "file":
                 file_data = await part.read(decode=False)
             elif part.name == "path":
@@ -72,7 +76,7 @@ class AssetsEndpoint(RestEndpoint):
             )
 
         # Save the asset
-        success, abs_path, error = assets.save_asset(
+        success, abs_path, error = assets.save_asset(  # noqa: RUF059
             self._ledfx.config_dir,
             asset_path,
             file_data,
@@ -115,7 +119,7 @@ class AssetsEndpoint(RestEndpoint):
             try:
                 data = await request.json()
                 asset_path = data.get("path")
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 pass
 
         if not asset_path:
@@ -125,9 +129,7 @@ class AssetsEndpoint(RestEndpoint):
             )
 
         try:
-            success, error = assets.delete_asset(
-                self._ledfx.config_dir, asset_path
-            )
+            success, error = assets.delete_asset(self._ledfx.config_dir, asset_path)
 
             if not success:
                 return await self.invalid_request(
@@ -141,8 +143,6 @@ class AssetsEndpoint(RestEndpoint):
                 data={"deleted": True, "path": asset_path},
             )
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             _LOGGER.warning("Failed to delete asset %s: %s", asset_path, e)
-            return await self.internal_error(
-                message=f"Failed to delete asset: {e}"
-            )
+            return await self.internal_error(message=f"Failed to delete asset: {e}")

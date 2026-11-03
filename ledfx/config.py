@@ -12,6 +12,8 @@ from packaging.version import parse as parse_version
 
 from ledfx.consts import CONFIGURATION_VERSION
 
+_LOGGER = logging.getLogger(__name__)
+
 CONFIG_DIRECTORY = ".ledfx"
 CONFIG_FILE_NAME = "config.json"
 PRESETS_FILE_NAME = "presets.json"
@@ -53,6 +55,9 @@ CORE_CONFIG_KEYS_NO_RESTART = [
     "lifx_discovery_timeout",
     "sendspin_always_on",
     "now_playing",
+    "allowed_origins",
+    "allowed_hosts",
+    "allow_null_origin",
 ]
 # Collection of keys that are used for visualisation configuration - used to check if we need to restart the visualisation event listeners
 VISUALISATION_CONFIG_KEYS = [
@@ -76,7 +81,7 @@ class Transmission:
     def get_list():
         transmission_dict = vars(Transmission)
         t_list = []
-        for attribute in transmission_dict.keys():
+        for attribute in transmission_dict:
             if attribute[:2] != "__" and attribute != "get_list":
                 t_list.append(getattr(Transmission, attribute))
         return t_list
@@ -157,9 +162,7 @@ CORE_CONFIG_SCHEMA = vol.Schema(
         vol.Optional("transmission_mode", default="compressed"): vol.In(
             Transmission.get_list()
         ),
-        vol.Optional("visualisation_fps", default=30): vol.All(
-            int, vol.Range(1, 60)
-        ),
+        vol.Optional("visualisation_fps", default=30): vol.All(int, vol.Range(1, 60)),
         vol.Optional("visualisation_maxlen", default=81): vol.All(
             int, vol.Range(5, 65536)
         ),
@@ -174,9 +177,7 @@ CORE_CONFIG_SCHEMA = vol.Schema(
         vol.Optional("create_segments", default=False): bool,
         vol.Optional("flush_on_deactivate", default=False): bool,
         vol.Optional("wled_preferences", default={}): dict,
-        vol.Optional(
-            "configuration_version", default=CONFIGURATION_VERSION
-        ): str,
+        vol.Optional("configuration_version", default=CONFIGURATION_VERSION): str,
         vol.Optional("global_brightness", default=1.0): vol.All(
             vol.Coerce(float), vol.Range(0, 1.0)
         ),
@@ -195,6 +196,21 @@ CORE_CONFIG_SCHEMA = vol.Schema(
         vol.Optional("sendspin_servers", default={}): dict,
         vol.Optional("sendspin_always_on", default=True): bool,
         vol.Optional("now_playing", default={}): dict,
+        vol.Optional(
+            "allowed_origins",
+            default=[],
+            description='Extra web origins (e.g. "https://ledfx.example.com") allowed to use the API from a browser. "*" allows every origin',
+        ): [str],
+        vol.Optional(
+            "allowed_hosts",
+            default=[],
+            description='Extra host names (e.g. "ledfx.example.com") that browsers may use to reach LedFx. "*" allows every name',
+        ): [str],
+        vol.Optional(
+            "allow_null_origin",
+            default=False,
+            description='Accept browser requests whose Origin is "null"',
+        ): bool,
     },
     extra=vol.ALLOW_EXTRA,
 )
@@ -234,9 +250,7 @@ def get_default_config_directory() -> str:
         str: The default configuration directory path.
     """
 
-    base_dir = (
-        os.getenv("APPDATA") if os.name == "nt" else os.path.expanduser("~")
-    )
+    base_dir = os.getenv("APPDATA") if os.name == "nt" else os.path.expanduser("~")
     return os.path.join(base_dir, CONFIG_DIRECTORY)
 
 
@@ -295,7 +309,7 @@ def get_profile_dump_location(config_dir: str) -> str:
     Returns:
         str: The complete path for dumping the profile.
     """
-    date_time = datetime.datetime.now().strftime("%d-%m-%y_%H-%M-%S")
+    date_time = datetime.datetime.now().astimezone().strftime("%d-%m-%y_%H-%M-%S")
     return os.path.join(config_dir, f"LedFx_{date_time}.profile")
 
 
@@ -470,17 +484,14 @@ def load_config(config_dir: str) -> dict:
                 _LOGGER.warning(
                     "LedFx config version: %s, your config version: %s",
                     CONFIGURATION_VERSION,
-                    config_json.get(
-                        "configuration_version", "UNDEFINED (old!)"
-                    ),
+                    config_json.get("configuration_version", "UNDEFINED (old!)"),
                 )
                 try:
                     config = migrate_config(config_json)
                     save_config(config, config_dir)
-                except Exception as e:
+                except Exception:
                     _LOGGER.exception(
-                        "Failed to migrate your config to the new standard :( Your old config is backed up safely. Please let a developer know what happened: %s",
-                        e,
+                        "Failed to migrate your config to the new standard :( Your old config is backed up safely. Please let a developer know what happened.",
                     )
                     config = {}
                 return CORE_CONFIG_SCHEMA(config)
@@ -594,8 +605,7 @@ def migrate_config(old_config):
         for effect_id in effects:
             if clean_effect_id(effect_id) == candidate_effect_id:
                 return effect_id
-        else:
-            return None
+        return None
 
     def sanitise_effect_config(effect_type, old_config):
         """
@@ -628,7 +638,7 @@ def migrate_config(old_config):
                         ]
                     schema[new_key](old_config[old_key])
                     new_config[new_key] = old_config[old_key]
-                except (vol.MultipleInvalid, vol.InInvalid, Exception):
+                except (vol.MultipleInvalid, vol.InInvalid, Exception):  # noqa: BLE001
                     _LOGGER.warning(
                         "Preset for %s with config item %s : %s is invalid. Discarding.",
                         effect_type,
@@ -663,10 +673,7 @@ def migrate_config(old_config):
                 "FXMatrix devices are no longer supported. Add it as plain UDP or WLED."
             )
             continue
-        if (
-            device["type"].lower() == "artnet"
-            and "device_repeat" in device["config"]
-        ):
+        if device["type"].lower() == "artnet" and "device_repeat" in device["config"]:
             device["config"]["pixels_per_device"] = device["config"].pop(
                 "device_repeat"
             )
@@ -698,9 +705,7 @@ def migrate_config(old_config):
 
     # if displays/virtuals are present, remove their effects and rename to virtuals
     # else if no virtuals saved, create virtuals for all the devices
-    virtuals = new_config.pop("displays", None) or new_config.pop(
-        "virtuals", None
-    )
+    virtuals = new_config.pop("displays", None) or new_config.pop("virtuals", None)
     if virtuals:
         for virtual in virtuals:
             effect = virtual.get("effect", None)
@@ -709,22 +714,22 @@ def migrate_config(old_config):
                     effect.get("type", None),
                     effect.get("config", None),
                 )
-                if effect_id:
-                    new_effect_id = get_matching_effect_id(effect_id)
-                    if not new_effect_id:
-                        _LOGGER.warning(
-                            "Could not match effect id %s to any current effects. Discarding this effect from virtual %s.",
-                            effect_id,
-                            virtual["id"],
-                        )
-                        continue
-                    new_effect_config = sanitise_effect_config(
-                        new_effect_id, effect_config
+                new_effect_id = get_matching_effect_id(effect_id) if effect_id else None
+                if not new_effect_id:
+                    _LOGGER.warning(
+                        "Could not match effect id %s to any current effects. Discarding this effect from virtual %s.",
+                        effect_id,
+                        virtual["id"],
                     )
-                virtual["effect"] = {
-                    "config": new_effect_config,
-                    "type": new_effect_id,
-                }
+                    virtual.pop("effect", None)
+                else:
+                    new_effect_config = sanitise_effect_config(
+                        new_effect_id, effect_config or {}
+                    )
+                    virtual["effect"] = {
+                        "config": new_effect_config,
+                        "type": new_effect_id,
+                    }
             virtual["auto_generated"] = virtual.get("auto_generated", False)
         new_config["virtuals"] = virtuals
     else:  # time to make some virtuals
@@ -740,9 +745,7 @@ def migrate_config(old_config):
                 "name": name,
                 # "icon_name": device_config["icon_name"],
             }
-            segments = [
-                [device["id"], 0, device["config"]["pixel_count"] - 1, False]
-            ]
+            segments = [[device["id"], 0, device["config"]["pixel_count"] - 1, False]]
 
             new_config["virtuals"].append(
                 {
@@ -779,14 +782,16 @@ def migrate_config(old_config):
     # clean up scenes. if you are reading this, sorry for the confusing variable naming. i've tried my best :D
     scenes = new_config.pop("scenes", ())
     new_config["scenes"] = {}
-    if scenes:
-        scenes_mode = next(
-            mode
-            for mode in scenes[next(iter(scenes))]
-            if mode in ("devices", "displays", "virtuals")
-        )
     for scene_id in scenes:
-        virtuals_ish = scenes[scene_id].pop(scenes_mode, ())
+        scenes_mode = next(
+            (
+                mode
+                for mode in scenes[scene_id]
+                if mode in ("devices", "displays", "virtuals")
+            ),
+            None,
+        )
+        virtuals_ish = scenes[scene_id].pop(scenes_mode, ()) if scenes_mode else ()
         new_virtuals = {}
         for virtual_ish in virtuals_ish:
             # if scenes are populated by devices, then we should by now have virtuals made for each device.
@@ -825,9 +830,7 @@ def migrate_config(old_config):
                         scene_id,
                     )
                     continue
-                new_effect_config = sanitise_effect_config(
-                    new_effect_id, effect_config
-                )
+                new_effect_config = sanitise_effect_config(new_effect_id, effect_config)
                 new_virtuals[actual_virtual] = {
                     "config": new_effect_config,
                     "type": new_effect_id,
@@ -893,24 +896,18 @@ def migrate_config(old_config):
                 )
 
         # Update user presets for equalizer2d
-        equalizer2d_presets = new_config.get("user_presets", {}).get(
-            "equalizer2d", {}
-        )
-        for preset_name, preset_data in equalizer2d_presets.items():
+        equalizer2d_presets = new_config.get("user_presets", {}).get("equalizer2d", {})
+        for preset_data in equalizer2d_presets.values():
             preset_data["config"] = invert_equalizer2d_flip_vertical(
                 preset_data.get("config", {})
             )
 
         # Update scenes with equalizer2d effects
         for scene_id, scene_data in new_config.get("scenes", {}).items():
-            for virtual_id, virtual_effect in scene_data.get(
-                "virtuals", {}
-            ).items():
+            for virtual_effect in scene_data.get("virtuals", {}).values():
                 if virtual_effect.get("type") == "equalizer2d":
-                    virtual_effect["config"] = (
-                        invert_equalizer2d_flip_vertical(
-                            virtual_effect.get("config", {})
-                        )
+                    virtual_effect["config"] = invert_equalizer2d_flip_vertical(
+                        virtual_effect.get("config", {})
                     )
 
     _LOGGER.warning("Finished migrating config.")
@@ -927,7 +924,7 @@ def create_backup(config_dir: str, backup_reason: str) -> None:
     """
 
     config_file = os.path.join(config_dir, CONFIG_FILE_NAME)
-    date = datetime.datetime.now().strftime("%d-%m-%y_%H-%M-%S")
+    date = datetime.datetime.now().astimezone().strftime("%d-%m-%y_%H-%M-%S")
     backup_location = os.path.join(config_dir, f"config_backup_{date}.json")
     if os.path.exists(config_file):
         try:
@@ -955,7 +952,7 @@ def save_config(config: dict, config_dir: str) -> None:
     config_file = ensure_config_file(config_dir)
     # Ensure logger is initialized (tests may call save_config without module init)
     try:
-        _LOGGER
+        _LOGGER  # noqa: B018
     except NameError:
         load_logger()
 
@@ -967,9 +964,7 @@ def save_config(config: dict, config_dir: str) -> None:
         del config_view[key]
 
     with open(config_file, "w", encoding="utf-8") as file:
-        json.dump(
-            config_view, file, ensure_ascii=False, sort_keys=True, indent=4
-        )
+        json.dump(config_view, file, ensure_ascii=False, sort_keys=True, indent=4)
 
 
 def save_presets(config: dict, config_dir: str) -> None:
@@ -993,9 +988,7 @@ def save_presets(config: dict, config_dir: str) -> None:
         del config_view[key]
 
     with open(presets_file, "w", encoding="utf-8") as file:
-        json.dump(
-            config_view, file, ensure_ascii=False, sort_keys=True, indent=4
-        )
+        json.dump(config_view, file, ensure_ascii=False, sort_keys=True, indent=4)
 
 
 def filter_config_for_comparison(config):
@@ -1029,9 +1022,9 @@ def configs_match(config1, config2):
     Returns:
         bool: True if configurations match (ignoring UI-only keys), False otherwise.
     """
-    return filter_config_for_comparison(
-        config1
-    ) == filter_config_for_comparison(config2)
+    return filter_config_for_comparison(config1) == filter_config_for_comparison(
+        config2
+    )
 
 
 def find_matching_preset(
@@ -1060,9 +1053,7 @@ def find_matching_preset(
         return None, None
 
     # Check ledfx_presets first
-    ledfx_defaults = generate_defaults(
-        ledfx_presets, ledfx_effects, effect_type
-    )
+    ledfx_defaults = generate_defaults(ledfx_presets, ledfx_effects, effect_type)
     for preset_id, preset_data in ledfx_defaults.items():
         preset_config = preset_data.get("config", {})
         if configs_match(preset_config, effect_config):

@@ -6,7 +6,8 @@ upstream code. Existing copyright notices, AUTHORS.rst and license texts are ret
 ## Backend and project history
 
 - Upstream: https://github.com/LedFx/LedFx
-- Base commit: a6e73a886dc6252b9df2a9c5d3e8928e07fffa61
+- Original fork base: a6e73a886dc6252b9df2a9c5d3e8928e07fffa61
+- Stable upstream merged: v2.2.1, e25a9b52f6d6503c2f4ff000414924ce8e110b66
 - License: GNU General Public License v3; see LICENSE.txt and upstream file notices.
 - Upstream Git history is retained as the parent history of this fork.
 

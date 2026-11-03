@@ -3,7 +3,6 @@ import logging
 import uuid
 from json import JSONDecodeError
 
-import aiohttp_cors
 from aiohttp import web
 
 from ledfx.utils import BaseRegistry, RegistryLoader
@@ -64,16 +63,13 @@ class RestEndpoint(BaseRegistry):
 
         unsatisfied_args = set(wanted_args) - set(available_args.keys())
         if unsatisfied_args:
-            raise web.HttpBadRequest("")
+            raise web.HTTPBadRequest()
 
         try:
             return await method(
-                **{
-                    arg_name: available_args[arg_name]
-                    for arg_name in wanted_args
-                }
+                **{arg_name: available_args[arg_name] for arg_name in wanted_args}
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             # _LOGGER.exception(e)
             reason = getattr(e, "args", None)
             if reason:
@@ -207,25 +203,11 @@ class RestApi(RegistryLoader):
         self._ledfx = ledfx
 
     def register_routes(self, app):
-        methods = ["GET", "PUT", "POST", "DELETE"]
-        cors = aiohttp_cors.setup(
-            app,
-            defaults={
-                "*": aiohttp_cors.ResourceOptions(
-                    allow_credentials=True,
-                    expose_headers="*",
-                    allow_headers="*",
-                    allow_methods=methods,
-                )
-            },
-        )
         # Create the endpoints and register their routes
         for endpoint_type in self.types():
             endpoint = self.create(type=endpoint_type, ledfx=self._ledfx)
-            resource = cors.add(
-                app.router.add_resource(
-                    endpoint.ENDPOINT_PATH, name=f"api_{endpoint_type}"
-                )
+            resource = app.router.add_resource(
+                endpoint.ENDPOINT_PATH, name=f"api_{endpoint_type}"
             )
-            for method in methods:
-                cors.add(resource.add_route(method, endpoint.handler))
+            for method in ["GET", "PUT", "POST", "DELETE"]:
+                resource.add_route(method, endpoint.handler)

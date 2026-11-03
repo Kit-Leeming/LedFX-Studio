@@ -60,6 +60,9 @@ PERMITTED_KEYS = {
         "lifx_broadcast_address",
         "lifx_discovery_timeout",
         "sendspin_always_on",
+        "allowed_origins",
+        "allowed_hosts",
+        "allow_null_origin",
     ),
 }
 
@@ -126,10 +129,7 @@ def convertToJsonSchema(schema):
 
         return val
 
-    if (
-        callable(schema)
-        and getattr(schema, "__name__", None) == "fps_validator"
-    ):
+    if callable(schema) and getattr(schema, "__name__", None) == "fps_validator":
         return {"type": "int", "enum": list(AVAILABLE_FPS)}
 
     elif (
@@ -138,30 +138,20 @@ def convertToJsonSchema(schema):
     ):
         return {"type": "string", "enum": AudioInputSource.input_devices()}
 
-    elif (
-        callable(schema)
-        and getattr(schema, "__name__", None) == "validate_color"
-    ):
+    elif callable(schema) and getattr(schema, "__name__", None) == "validate_color":
         return {"type": "color", "gradient": False}
 
-    elif (
-        callable(schema)
-        and getattr(schema, "__name__", None) == "validate_gradient"
-    ):
+    elif callable(schema) and getattr(schema, "__name__", None) == "validate_gradient":
         return {"type": "color", "gradient": True}
 
-    elif (
-        callable(schema)
-        and getattr(schema, "__name__", None) == "validate_steps"
-    ):
+    elif callable(schema) and getattr(schema, "__name__", None) == "validate_steps":
         return {
             "type": "string",
             "pattern": "^[01]{4}$|^[01]{8}$|^[01]{12}$|^[01]{16}$",
         }
 
     elif (
-        callable(schema)
-        and getattr(schema, "__name__", None) == "virtual_id_validator"
+        callable(schema) and getattr(schema, "__name__", None) == "virtual_id_validator"
     ):
         return {
             "type": "string",
@@ -219,9 +209,7 @@ def convertToJsonSchema(schema):
     elif isinstance(schema, list):
         val = {
             "type": "list",
-            "validators": list(
-                convertToJsonSchema(validator) for validator in schema
-            ),
+            "validators": [convertToJsonSchema(validator) for validator in schema],
         }
         return val
 

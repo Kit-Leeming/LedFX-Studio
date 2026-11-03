@@ -50,7 +50,6 @@ hiddenimports = [
     "packaging",
     "packaging.version",
     "netifaces",
-    "aiohttp_cors",
     "dotenv",
     "lifx",
     "lifx.exceptions",

@@ -2,6 +2,7 @@
 
 import math
 import timeit
+from typing import ClassVar
 
 import numpy as np
 import voluptuous as vol
@@ -9,7 +10,6 @@ import voluptuous as vol
 from ledfx.effects import Effect
 from ledfx.effects.audio import AudioReactiveEffect
 from ledfx.effects.gradient import GradientEffect
-
 
 level = vol.All(vol.Coerce(float), vol.Range(min=0, max=1))
 
@@ -23,7 +23,7 @@ class WashFamilyEffect(AudioReactiveEffect, GradientEffect):
     """Keep RGBW handling local to wash effects and opt-in WLED devices."""
 
     CATEGORY = "Wash Lights"
-    HIDDEN_KEYS = [
+    HIDDEN_KEYS: ClassVar[list[str]] = [
         "blur",
         "mirror",
         "flip",

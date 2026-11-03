@@ -11,13 +11,19 @@ from ledfx.effects.wash_family import WashFamilyEffect, level, positive
 class WashColorMemory(WashFamilyEffect):
     NAME = "Wash Color Memory"
     HIDDEN_KEYS = WashFamilyEffect.HIDDEN_KEYS + ["audio_gate"]
-    ADVANCED_KEYS = WashFamilyEffect.ADVANCED_KEYS + ["memory_time", "cooldown", "blend"]
+    ADVANCED_KEYS = WashFamilyEffect.ADVANCED_KEYS + [
+        "memory_time",
+        "cooldown",
+        "blend",
+    ]
     CONFIG_SCHEMA = vol.Schema(
         {
             vol.Optional("selection", default="Alternate"): vol.In(
                 ("Alternate", "Random", "All", "Center Out")
             ),
-            vol.Optional("color_choice", default="Advance"): vol.In(("Advance", "Random")),
+            vol.Optional("color_choice", default="Advance"): vol.In(
+                ("Advance", "Random")
+            ),
             vol.Optional("color_advance", default=0.21): level,
             vol.Optional("memory_time", default=3.0): positive(0.1, 30),
             vol.Optional("cooldown", default=0.12): positive(0.03, 2),
@@ -43,7 +49,11 @@ class WashColorMemory(WashFamilyEffect):
         self._last_update = now
         decay = math.exp(-dt / config["memory_time"])
         self._memory_level *= decay
-        if self.consume_onsets() and self._peak_strength >= config["threshold"] and now - self._last_hit >= config["cooldown"]:
+        if (
+            self.consume_onsets()
+            and self._peak_strength >= config["threshold"]
+            and now - self._last_hit >= config["cooldown"]
+        ):
             count = self.pixel_count
             mode = config["selection"]
             if mode == "All":
@@ -55,11 +65,17 @@ class WashColorMemory(WashFamilyEffect):
                 chosen = np.array([order[self._hit_index % count]])
             else:
                 chosen = np.array([self._hit_index % count])
-            point = self._rng.random() if config["color_choice"] == "Random" else self._hit_index * config["color_advance"]
+            point = (
+                self._rng.random()
+                if config["color_choice"] == "Random"
+                else self._hit_index * config["color_advance"]
+            )
             color = self.palette([point])[0]
             blend = config["blend"]
             self._memory[chosen] = self._memory[chosen] * blend + color * (1 - blend)
-            self._memory_level[chosen] = config["hit_level"] * max(self._peak_strength, 0.35)
+            self._memory_level[chosen] = config["hit_level"] * max(
+                self._peak_strength, 0.35
+            )
             self._last_hit = now
             self._hit_index += 1
         base = config["base_level"]

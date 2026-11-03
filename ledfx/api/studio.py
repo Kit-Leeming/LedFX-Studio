@@ -1,4 +1,5 @@
 from aiohttp import web
+
 from ledfx.api import RestEndpoint
 from ledfx.api.virtual import make_virtual_response
 from ledfx.studio import Studio, color_fields
@@ -24,8 +25,7 @@ class StudioEndpoint(RestEndpoint):
                     for v in self._ledfx.virtuals.values()
                 },
                 "color_fields": {
-                    k: color_fields(v)
-                    for k, v in self._ledfx.effects.classes().items()
+                    k: color_fields(v) for k, v in self._ledfx.effects.classes().items()
                 },
             }
         )

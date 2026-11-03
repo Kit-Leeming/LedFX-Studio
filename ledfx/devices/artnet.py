@@ -82,11 +82,30 @@ class ArtNetDevice(NetworkedDevice):
         self.config_use(config)
         self.init = True
 
+    OUTPUT_KEYS = (
+        "ip_address",
+        "port",
+        "universe",
+        "refresh_rate",
+        "pixel_count",
+        "packet_size",
+        "even_packet_size",
+        "pixels_per_device",
+        "dmx_start_address",
+        "rgb_order",
+        "white_mode",
+        "pre_amble",
+        "post_amble",
+    )
+
     def config_updated(self, config):
+        if not self._output_changed():
+            return
         self.config_use(config)
         self.deactivate()
         self.init = True
         self.activate()
+        self._built_settings = self._output_settings()
 
     def config_use(self, config):
         # get the preamble string, strip it and convert to np.arry of unint8
@@ -141,10 +160,7 @@ class ArtNetDevice(NetworkedDevice):
 
         # treat a default value of zero in pixels_per_device as all pixels in one device
         # also protect against greater than pixel_count
-        if (
-            self.pixels_per_device == 0
-            or self.pixels_per_device > self.pixel_count
-        ):
+        if self.pixels_per_device == 0 or self.pixels_per_device > self.pixel_count:
             self.use_pixels_per_device = self.pixel_count
         else:
             self.use_pixels_per_device = self.pixels_per_device
@@ -156,10 +172,7 @@ class ArtNetDevice(NetworkedDevice):
 
         total_pixels_per_device = (
             self.pre_amble.size
-            + (
-                self.use_pixels_per_device
-                * self.output_mode.channels_per_pixel
-            )
+            + (self.use_pixels_per_device * self.output_mode.channels_per_pixel)
             + self.post_amble.size
         )
         self.channel_count = (
@@ -194,12 +207,8 @@ class ArtNetDevice(NetworkedDevice):
                 )
 
                 # Create the pre_amble and post_amble arrays to match the device count
-                pre_amble_repeated = np.tile(
-                    self.pre_amble, (self.num_devices, 1)
-                )
-                post_amble_repeated = np.tile(
-                    self.post_amble, (self.num_devices, 1)
-                )
+                pre_amble_repeated = np.tile(self.pre_amble, (self.num_devices, 1))
+                post_amble_repeated = np.tile(self.post_amble, (self.num_devices, 1))
 
                 # Concatenate the pre_amble, reshaped data, and post_amble along the second axis
                 full_device_data = np.concatenate(
@@ -208,9 +217,7 @@ class ArtNetDevice(NetworkedDevice):
                 )
 
                 devices_data[0 : self.dmx_start_address] = 0
-                devices_data[self.dmx_start_address :] = (
-                    full_device_data.ravel()
-                )
+                devices_data[self.dmx_start_address :] = full_device_data.ravel()
 
                 # TODO: Handle the data transformation outside of the loop and just use loop to set universe and send packets
 
@@ -219,9 +226,9 @@ class ArtNetDevice(NetworkedDevice):
                         start = i * self.packet_size
                         end = start + self.packet_size
                         packet = np.zeros(self.packet_size, dtype=np.uint8)
-                        packet[
-                            : min(self.packet_size, self.channel_count - start)
-                        ] = devices_data[start:end]
+                        packet[: min(self.packet_size, self.channel_count - start)] = (
+                            devices_data[start:end]
+                        )
                         self._artnet.set_universe(i + self._config["universe"])
                         self._artnet.set(packet)
                         self._artnet.show()

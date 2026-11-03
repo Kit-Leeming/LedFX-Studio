@@ -37,7 +37,10 @@ class WashFrequencyColor(WashFamilyEffect):
         # Lift quiet bands slightly so bass-heavy tracks do not pin one color.
         weights = bands ** (1 - 0.75 * config["band_balance"])
         palette = np.array(
-            [parse_color(config[key]) for key in ("color_lows", "color_mids", "color_highs")],
+            [
+                parse_color(config[key])
+                for key in ("color_lows", "color_mids", "color_highs")
+            ],
             dtype=float,
         )
         if np.sum(weights) > 1e-5:
@@ -57,5 +60,10 @@ class WashFrequencyColor(WashFamilyEffect):
             power ** (1.5 - config["response"])
         )
         offsets = np.linspace(-0.5, 0.5, self.pixel_count)[:, None]
-        colors = np.clip(self._wash_color + offsets * config["spatial_spread"] * (palette[2] - palette[0]), 0, 255)
+        colors = np.clip(
+            self._wash_color
+            + offsets * config["spatial_spread"] * (palette[2] - palette[0]),
+            0,
+            255,
+        )
         self.output(colors * level_now, np.full(self.pixel_count, level_now))

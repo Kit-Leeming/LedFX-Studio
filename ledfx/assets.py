@@ -20,11 +20,12 @@ import logging
 import mimetypes
 import os
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-import PIL.Image as Image
+from PIL import Image
 
 from ledfx.consts import LEDFX_ASSETS_PATH
+from ledfx.fsutil import fsync_directory
 from ledfx.utilities.gradient_extraction import extract_gradient_metadata
 from ledfx.utilities.image_utils import get_image_metadata
 from ledfx.utilities.security_utils import (
@@ -110,7 +111,7 @@ def _load_asset_metadata_cache(assets_dir: str) -> dict:
     try:
         with open(cache_path, encoding="utf-8") as f:
             return json.load(f)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         _LOGGER.warning("Failed to load asset metadata cache: %s", e)
         return {}
 
@@ -130,7 +131,7 @@ def _save_asset_metadata_cache(assets_dir: str, cache: dict) -> None:
         os.makedirs(assets_dir, exist_ok=True)
         with open(cache_path, "w", encoding="utf-8") as f:
             json.dump(cache, f, indent=2)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         _LOGGER.warning("Failed to save asset metadata cache: %s", e)
 
 
@@ -259,7 +260,7 @@ def validate_asset_content(
 
         return True, None, image
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         _LOGGER.warning("Image validation failed for %s: %s", file_path, e)
         return False, f"Not a valid image file: {e}", None
 
@@ -387,6 +388,7 @@ def save_asset(
 
         # Write data to temp file
         os.write(temp_fd, data)
+        os.fsync(temp_fd)
         os.close(temp_fd)
         temp_fd = None  # Mark as closed
 
@@ -397,6 +399,7 @@ def save_asset(
 
         os.rename(temp_path, absolute_path)
         temp_path = None  # Mark as moved
+        fsync_directory(parent_dir)  # persist the rename itself
 
         _LOGGER.info("Saved asset: %s (%s bytes)", relative_path, len(data))
 
@@ -412,7 +415,7 @@ def save_asset(
                         deleted_count,
                         relative_path,
                     )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             # Log but don't fail the save operation if cache clearing fails
             _LOGGER.warning(
                 "Failed to clear cached thumbnails for %s: %s",
@@ -422,7 +425,7 @@ def save_asset(
 
         return True, absolute_path, None
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         _LOGGER.warning("Failed to save asset %s: %s", relative_path, e)
         return False, None, f"Write failed: {e}"
 
@@ -431,21 +434,17 @@ def save_asset(
         if temp_fd is not None:
             try:
                 os.close(temp_fd)
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 pass
 
         if temp_path and os.path.exists(temp_path):
             try:
                 os.remove(temp_path)
-            except Exception as e:
-                _LOGGER.warning(
-                    "Failed to clean up temp file %s: %s", temp_path, e
-                )
+            except Exception as e:  # noqa: BLE001
+                _LOGGER.warning("Failed to clean up temp file %s: %s", temp_path, e)
 
 
-def delete_asset(
-    config_dir: str, relative_path: str
-) -> tuple[bool, str | None]:
+def delete_asset(config_dir: str, relative_path: str) -> tuple[bool, str | None]:
     """
     Securely delete an asset file.
 
@@ -495,7 +494,7 @@ def delete_asset(
 
         return True, None
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         _LOGGER.warning("Failed to delete asset %s: %s", relative_path, e)
         return False, f"Delete failed: {e}"
 
@@ -523,7 +522,7 @@ def _cleanup_empty_directories(config_dir: str, dir_path: str) -> None:
             else:
                 # Not empty or not a directory, stop
                 break
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             _LOGGER.debug("Could not remove directory %s: %s", current, e)
             break
 
@@ -607,7 +606,7 @@ def _list_assets_from_directory(
                     stat_info = os.stat(abs_path)
                     file_size = stat_info.st_size
                     modified_time = datetime.fromtimestamp(
-                        stat_info.st_mtime, tz=timezone.utc
+                        stat_info.st_mtime, tz=UTC
                     ).isoformat()
 
                     # Get image dimensions and animation metadata
@@ -641,7 +640,7 @@ def _list_assets_from_directory(
                                 "modified_time": modified_time,
                             }
                             cache_updated = True
-                        except Exception as e:
+                        except Exception as e:  # noqa: BLE001
                             _LOGGER.warning(
                                 "Failed to extract gradients for %s %s: %s",
                                 log_prefix,
@@ -671,7 +670,7 @@ def _list_assets_from_directory(
                         }
                     )
 
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     _LOGGER.warning(
                         "Could not get metadata for %s %s: %s",
                         log_prefix,
@@ -690,7 +689,7 @@ def _list_assets_from_directory(
         if cache_updated:
             _save_asset_metadata_cache(cache_location, metadata_cache)
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         _LOGGER.warning("Error listing %s: %s", log_prefix, e)
 
     return assets

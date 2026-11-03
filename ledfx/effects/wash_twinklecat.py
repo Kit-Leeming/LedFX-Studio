@@ -1,7 +1,5 @@
 """FastLED TwinkleFOX inspired glints with audio-controlled density."""
 
-import math
-
 import numpy as np
 import voluptuous as vol
 
@@ -45,7 +43,12 @@ class WashTwinklecat(WashFamilyEffect):
         cycles = np.floor(phase).astype(int)
         changed = cycles != self._cycle
         if np.any(changed):
-            probability = np.clip(config["density"] * (1 - config["audio_density"] + 1.8 * config["audio_density"] * power), 0, 1)
+            probability = np.clip(
+                config["density"]
+                * (1 - config["audio_density"] + 1.8 * config["audio_density"] * power),
+                0,
+                1,
+            )
             count = int(np.sum(changed))
             self._enabled[changed] = self._rng.random(count) < probability
             self._color_points[changed] = self._rng.random(count)

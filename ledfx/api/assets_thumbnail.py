@@ -8,6 +8,7 @@ from PIL import Image
 
 from ledfx import assets
 from ledfx.api import RestEndpoint
+from ledfx.utilities.security_utils import validate_pil_image
 from ledfx.utils import get_image_cache
 
 _LOGGER = logging.getLogger(__name__)
@@ -142,9 +143,7 @@ class AssetsThumbnailEndpoint(RestEndpoint):
         animated = request.query.get("animated", "true").lower() == "true"
 
         # Get and validate force_refresh parameter (query params are strings - accept "true"/"false")
-        force_refresh = (
-            request.query.get("force_refresh", "false").lower() == "true"
-        )
+        force_refresh = request.query.get("force_refresh", "false").lower() == "true"
 
         return await self._generate_thumbnail(
             request, asset_path, size, dimension, animated, force_refresh
@@ -179,7 +178,7 @@ class AssetsThumbnailEndpoint(RestEndpoint):
         """
         try:
             data = await request.json()
-        except Exception:
+        except Exception:  # noqa: BLE001
             return await self.json_decode_error()
 
         asset_path = data.get("path")
@@ -279,14 +278,12 @@ class AssetsThumbnailEndpoint(RestEndpoint):
             if cached_path:
                 try:
                     # Return cached thumbnail
-                    with open(cached_path, "rb") as f:
+                    with open(cached_path, "rb") as f:  # noqa: ASYNC230
                         cached_data = f.read()
 
                     # Determine content type from extension
                     content_type = (
-                        "image/webp"
-                        if cached_path.endswith(".webp")
-                        else "image/png"
+                        "image/webp" if cached_path.endswith(".webp") else "image/png"
                     )
 
                     _LOGGER.debug(
@@ -301,7 +298,7 @@ class AssetsThumbnailEndpoint(RestEndpoint):
                         body=cached_data,
                         headers={"Content-Type": content_type},
                     )
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     _LOGGER.warning(
                         "Failed to read cached thumbnail, regenerating: %s", e
                     )
@@ -315,9 +312,7 @@ class AssetsThumbnailEndpoint(RestEndpoint):
 
                 # open_image handles URL validation, download, and caching
                 try:
-                    image = open_image(
-                        asset_path, config_dir=self._ledfx.config_dir
-                    )
+                    image = open_image(asset_path, config_dir=self._ledfx.config_dir)
                     if not image:
                         return await self.invalid_request(
                             message=f"Failed to download or validate URL: {asset_path}",
@@ -337,10 +332,8 @@ class AssetsThumbnailEndpoint(RestEndpoint):
                             message=f"Failed to cache URL: {asset_path}",
                             type="error",
                         )
-                except Exception as e:
-                    _LOGGER.warning(
-                        "Failed to fetch URL %s: %s", asset_path, e
-                    )
+                except Exception as e:  # noqa: BLE001
+                    _LOGGER.warning("Failed to fetch URL %s: %s", asset_path, e)
                     return await self.invalid_request(
                         message=f"Failed to fetch URL: {e}",
                         type="error",
@@ -365,6 +358,13 @@ class AssetsThumbnailEndpoint(RestEndpoint):
                     n_frames = getattr(img, "n_frames", 1)
 
                     if animated and is_animated_image and n_frames > 1:
+                        # Assets on disk may predate the upload-time frame
+                        # caps, so check before decoding every frame.
+                        if not validate_pil_image(img):
+                            return await self.invalid_request(
+                                message="Animation exceeds frame or size limits",
+                                type="error",
+                            )
                         # Process animated image - create WebP thumbnail
                         frames = []
                         durations = []
@@ -380,10 +380,8 @@ class AssetsThumbnailEndpoint(RestEndpoint):
 
                             # Calculate dimensions
                             width, height = frame.size
-                            new_width, new_height = (
-                                _calculate_thumbnail_dimensions(
-                                    width, height, size, dimension
-                                )
+                            new_width, new_height = _calculate_thumbnail_dimensions(
+                                width, height, size, dimension
                             )
 
                             # Resize frame
@@ -429,10 +427,8 @@ class AssetsThumbnailEndpoint(RestEndpoint):
                                     "Cached animated thumbnail for %s",
                                     asset_path,
                                 )
-                            except Exception as e:
-                                _LOGGER.warning(
-                                    "Failed to cache thumbnail: %s", e
-                                )
+                            except Exception as e:  # noqa: BLE001
+                                _LOGGER.warning("Failed to cache thumbnail: %s", e)
 
                         return web.Response(
                             body=thumbnail_data,
@@ -450,10 +446,8 @@ class AssetsThumbnailEndpoint(RestEndpoint):
 
                         # Calculate thumbnail dimensions based on dimension parameter
                         width, height = img.size
-                        new_width, new_height = (
-                            _calculate_thumbnail_dimensions(
-                                width, height, size, dimension
-                            )
+                        new_width, new_height = _calculate_thumbnail_dimensions(
+                            width, height, size, dimension
                         )
 
                         # Resize image
@@ -485,17 +479,15 @@ class AssetsThumbnailEndpoint(RestEndpoint):
                                     "Cached static thumbnail for %s",
                                     asset_path,
                                 )
-                            except Exception as e:
-                                _LOGGER.warning(
-                                    "Failed to cache thumbnail: %s", e
-                                )
+                            except Exception as e:  # noqa: BLE001
+                                _LOGGER.warning("Failed to cache thumbnail: %s", e)
 
                         return web.Response(
                             body=thumbnail_data,
                             headers={"Content-Type": "image/png"},
                         )
 
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 _LOGGER.warning(
                     "Failed to generate thumbnail for %s: %s", asset_path, e
                 )
@@ -503,8 +495,6 @@ class AssetsThumbnailEndpoint(RestEndpoint):
                     message=f"Failed to generate thumbnail: {e}"
                 )
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             _LOGGER.warning("Failed to process thumbnail request: %s", e)
-            return await self.internal_error(
-                message=f"Failed to process request: {e}"
-            )
+            return await self.internal_error(message=f"Failed to process request: {e}")

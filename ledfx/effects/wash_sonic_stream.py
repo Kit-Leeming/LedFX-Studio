@@ -11,15 +11,23 @@ from ledfx.effects.wash_family import WashFamilyEffect, level, positive
 class WashSonicStream(WashFamilyEffect):
     NAME = "Wash Sonic Stream"
     HIDDEN_KEYS = WashFamilyEffect.HIDDEN_KEYS + ["audio_gate"]
-    ADVANCED_KEYS = WashFamilyEffect.ADVANCED_KEYS + ["particle_width", "flow_rate", "fade_time"]
+    ADVANCED_KEYS = WashFamilyEffect.ADVANCED_KEYS + [
+        "particle_width",
+        "flow_rate",
+        "fade_time",
+    ]
     CONFIG_SCHEMA = vol.Schema(
         {
-            vol.Optional("flow", default="Left to Right"): vol.In(("Left to Right", "Right to Left", "Center Out")),
+            vol.Optional("flow", default="Left to Right"): vol.In(
+                ("Left to Right", "Right to Left", "Center Out")
+            ),
             vol.Optional("flow_rate", default=2.2): positive(0.1, 20),
             vol.Optional("emission", default=5.0): positive(0.1, 30),
             vol.Optional("particle_width", default=0.75): positive(0.2, 5),
             vol.Optional("fade_time", default=1.5): positive(0.1, 6),
-            vol.Optional("frequency_band", default="Bass"): vol.In(("Bass", "Mids", "High")),
+            vol.Optional("frequency_band", default="Bass"): vol.In(
+                ("Bass", "Mids", "High")
+            ),
             vol.Optional("color_modulation", default=0.65): level,
             vol.Optional("base_level", default=0.04): level,
             vol.Optional("threshold", default=0.06): level,
@@ -46,8 +54,12 @@ class WashSonicStream(WashFamilyEffect):
         emissions = min(8, int(self._emit_balance))
         self._emit_balance -= emissions
         for _ in range(emissions):
-            point = (self._emitted * 0.11 + self._bands[1] * config["color_modulation"]) % 1
-            self._particles.append((now, self.palette([point])[0], min(1, 0.35 + power)))
+            point = (
+                self._emitted * 0.11 + self._bands[1] * config["color_modulation"]
+            ) % 1
+            self._particles.append(
+                (now, self.palette([point])[0], min(1, 0.35 + power))
+            )
             self._emitted += 1
         self._particles = self._particles[-96:]
         count = self.pixel_count

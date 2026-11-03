@@ -57,9 +57,7 @@ class DeviceEndpoint(RestEndpoint):
             return await self.invalid_request(
                 "Required attribute 'config' was not provided"
             )
-        _LOGGER.debug(
-            "Updating device %s with config %s", device_id, device_config
-        )
+        _LOGGER.debug("Updating device %s with config %s", device_id, device_config)
 
         try:
             device.update_config(device_config)
@@ -68,9 +66,10 @@ class DeviceEndpoint(RestEndpoint):
             _LOGGER.warning(error_message)
             return await self.internal_error(error_message, "error")
         # Update and save the configuration
-        for device in self._ledfx.config["devices"]:
-            if device["id"] == device_id:
-                device["config"] = device_config
+        # Persist the merged, validated config: a partial PUT must not drop keys.
+        for saved in self._ledfx.config["devices"]:
+            if saved["id"] == device_id:
+                saved["config"] = device.config
                 break
         save_config(
             config=self._ledfx.config,
@@ -104,9 +103,7 @@ class DeviceEndpoint(RestEndpoint):
             response = {"status": "success", "virtuals": {}}
             response["paused"] = self._ledfx.virtuals._paused
             for virtual in self._ledfx.virtuals.values():
-                response["virtuals"][virtual.id] = make_virtual_response(
-                    virtual
-                )
+                response["virtuals"][virtual.id] = make_virtual_response(virtual)
 
         except (voluptuous.Error, ValueError) as msg:
             error_message = f"Error creating device {device_id}: {msg}"

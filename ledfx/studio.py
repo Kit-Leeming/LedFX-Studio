@@ -34,9 +34,7 @@ def color_fields(effect_class):
                 if "background" in k
                 else (
                     "accent"
-                    if any(
-                        t in k for t in ("mid", "high", "secondary", "accent")
-                    )
+                    if any(t in k for t in ("mid", "high", "secondary", "accent"))
                     else "primary"
                 )
             )
@@ -72,10 +70,10 @@ class Studio:
 
     def validate(self, data):
         if not isinstance(data, dict) or data.get("version") != 1:
-            raise ValueError("Unsupported Studio library version")
+            raise TypeError("Unsupported Studio library version")
         for key in (*COLLECTIONS, "assignments"):
             if not isinstance(data.get(key), dict):
-                raise ValueError(f"Studio {key} must be an object")
+                raise TypeError(f"Studio {key} must be an object")
         for collection in COLLECTIONS:
             for identifier, item in data[collection].items():
                 if (
@@ -84,9 +82,7 @@ class Studio:
                     or not isinstance(item.get("name"), str)
                     or not item["name"].strip()
                 ):
-                    raise ValueError(
-                        f"Every {collection} entry needs an ID and name"
-                    )
+                    raise ValueError(f"Every {collection} entry needs an ID and name")
         for theme in data["themes"].values():
             validate_gradient(theme["gradient"])
             for role in ROLES[1:]:
@@ -95,18 +91,16 @@ class Studio:
                 cls = self.ledfx.effects.get_class(effect_type)
                 fields = color_fields(cls)
                 if not isinstance(mapping, dict) or any(
-                    k not in fields or v not in ROLES
-                    for k, v in mapping.items()
+                    k not in fields or v not in ROLES for k, v in mapping.items()
                 ):
                     raise ValueError(f"Invalid mapping for {effect_type}")
         for rig in data["rigs"].values():
             if not isinstance(rig.get("virtuals"), list) or not all(
                 isinstance(v, str) for v in rig["virtuals"]
             ):
-                raise ValueError("Rig virtuals must be a list of IDs")
+                raise TypeError("Rig virtuals must be a list of IDs")
             if not isinstance(rig.get("groups", {}), dict) or any(
-                not isinstance(ids, list)
-                or any(v not in rig["virtuals"] for v in ids)
+                not isinstance(ids, list) or any(v not in rig["virtuals"] for v in ids)
                 for ids in rig.get("groups", {}).values()
             ):
                 raise ValueError("Rig groups must contain rig members")
@@ -118,12 +112,10 @@ class Studio:
                 if not isinstance(preset.get(key, {}), dict) or any(
                     t not in theme_ids for t in preset.get(key, {}).values()
                 ):
-                    raise ValueError(
-                        "A colour arrangement references a missing theme"
-                    )
+                    raise ValueError("A colour arrangement references a missing theme")
         for preset in data["effect_presets"].values():
             if not isinstance(preset.get("virtuals"), dict):
-                raise ValueError("Effect arrangements need virtuals")
+                raise TypeError("Effect arrangements need virtuals")
             for effect in preset["virtuals"].values():
                 if effect is not None:
                     cls = self.ledfx.effects.get_class(effect["type"])
@@ -147,17 +139,13 @@ class Studio:
         data["revision"] = self.data["revision"] + 1
         self.path.parent.mkdir(parents=True, exist_ok=True)
         temp = self.path.with_suffix(".json.tmp")
-        temp.write_text(
-            json.dumps(data, indent=2, allow_nan=False), encoding="utf-8"
-        )
+        temp.write_text(json.dumps(data, indent=2, allow_nan=False), encoding="utf-8")
         os.replace(temp, self.path)
         self.data = data
 
     def save_library(self, data):
         if data.get("revision") != self.data["revision"]:
-            raise ValueError(
-                "Studio changed in another window. Refresh before saving."
-            )
+            raise ValueError("Studio changed in another window. Refresh before saving.")
         self.write(data)
 
     def snapshot(self, ids):
@@ -185,16 +173,12 @@ class Studio:
         # LedFX normally forces overlapping virtuals off. Studio promises to
         # leave other lights untouched, so reject conflicting edits instead.
         outsiders = [
-            v
-            for v in self.ledfx.virtuals.values()
-            if v.id not in exclude and v.active
+            v for v in self.ledfx.virtuals.values() if v.id not in exclude and v.active
         ]
 
         def overlaps(a, b):
             return any(
-                da == db
-                and not da.startswith("gap-")
-                and max(sa, sb) <= min(ea, eb)
+                da == db and not da.startswith("gap-") and max(sa, sb) <= min(ea, eb)
                 for da, sa, ea, _ in a.segments
                 for db, sb, eb, _ in b.segments
             )
@@ -252,9 +236,7 @@ class Studio:
                 prepared.append((v, None, False))
                 continue
             current = before[identifier]["effect"]
-            effect_type = change.get(
-                "type", current["type"] if current else None
-            )
+            effect_type = change.get("type", current["type"] if current else None)
             if not effect_type:
                 if "theme" in change:
                     continue  # Keep the assignment for the next effect.
@@ -267,7 +249,7 @@ class Studio:
             )
             patch = change.get("config", {})
             if not isinstance(patch, dict):
-                raise ValueError("Settings must be an object")
+                raise TypeError("Settings must be an object")
             if set(patch) & set(color_fields(cls)):
                 raise ValueError("Use a theme to edit colour fields")
             config.update(patch)
@@ -284,16 +266,10 @@ class Studio:
                 (
                     v,
                     effect,
-                    (
-                        before[identifier]["active"]
-                        if "type" not in change
-                        else True
-                    ),
+                    (before[identifier]["active"] if "type" not in change else True),
                 )
             )
-        self.check_overlaps(
-            [v for v, effect, active in prepared if effect], ids
-        )
+        self.check_overlaps([v for v, effect, active in prepared if effect], ids)
         for v, effect, active in prepared:
             if effect and not v._devices:
                 raise ValueError(f"{v.name} has no configured device segments")
@@ -308,15 +284,11 @@ class Studio:
                 else:
                     v.clear_effect()
                     v.virtual_cfg.pop("effect", None)
-            save_config(
-                config=self.ledfx.config, config_dir=self.ledfx.config_dir
-            )
+            save_config(config=self.ledfx.config, config_dir=self.ledfx.config_dir)
             self.write(new_data)
         except Exception:
             self.restore(before)
-            save_config(
-                config=self.ledfx.config, config_dir=self.ledfx.config_dir
-            )
+            save_config(config=self.ledfx.config, config_dir=self.ledfx.config_dir)
             raise
         self.history.append(
             {
@@ -352,14 +324,10 @@ class Studio:
         )
         try:
             self.restore(item["before"])
-            save_config(
-                config=self.ledfx.config, config_dir=self.ledfx.config_dir
-            )
+            save_config(config=self.ledfx.config, config_dir=self.ledfx.config_dir)
             self.write(data)
         except Exception:
             self.restore(item["after"])
-            save_config(
-                config=self.ledfx.config, config_dir=self.ledfx.config_dir
-            )
+            save_config(config=self.ledfx.config, config_dir=self.ledfx.config_dir)
             raise
         self.history.pop()

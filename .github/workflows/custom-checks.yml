@@ -15,3 +15,11 @@ jobs:
       - run: uv sync --frozen --group dev --group build --python 3.12
       - run: uv run --no-sync python -m unittest tests.test_studio
       - run: uv run --no-sync python -m pytest --noconftest tests/test_beat_scan.py tests/test_wash_inspired.py -q
+      - name: Stable output and compatibility regressions
+        run: >-
+          uv run --no-sync python -m pytest --noconftest
+          tests/test_stable_custom_compat.py tests/test_device_lifecycle_regressions.py
+          tests/test_runtime_pixel_count.py tests/test_origin_policy.py
+          tests/test_audio_device_persistence.py tests/test_typing_runtime_regressions.py
+          tests/test_sendspin_always_on_runtime.py tests/test_sendspin_stream_flac_lifecycle.py
+          tests/test_sendspin_typing_regressions.py -k "not test_live_server" -q

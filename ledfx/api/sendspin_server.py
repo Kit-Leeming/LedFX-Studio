@@ -2,6 +2,7 @@
 
 import logging
 from json import JSONDecodeError
+from typing import Protocol
 
 from aiohttp import web
 
@@ -13,13 +14,30 @@ from ledfx.sendspin.config import validate_sendspin_server_url
 _LOGGER = logging.getLogger(__name__)
 
 
+class _AudioController(Protocol):
+    """Audio source operations used to restart an active Sendspin stream."""
+
+    def activate(self) -> None: ...
+
+    def deactivate(self) -> None: ...
+
+
+class _LedFxWithAudio(Protocol):
+    """LedFx state needed to synchronize a configured Sendspin server."""
+
+    @property
+    def audio(self) -> _AudioController | None: ...
+
+
 def _sendspin_available():
     from ledfx.sendspin import SENDSPIN_AVAILABLE
 
     return SENDSPIN_AVAILABLE
 
 
-def _sync_active_stream(ledfx, server_id: str, *, restart: bool) -> None:
+def _sync_active_stream(
+    ledfx: _LedFxWithAudio, server_id: str, *, restart: bool
+) -> None:
     """Stop (and optionally restart) the audio stream if it is using *server_id*.
 
     Called after a sendspin server config is updated or deleted so the live
@@ -32,7 +50,7 @@ def _sync_active_stream(ledfx, server_id: str, *, restart: bool) -> None:
         restart: If True, re-activate the stream after stopping it (used for
                  PUT when server_url changed); if False just stop it (DELETE).
     """
-    audio = getattr(ledfx, "audio", None)
+    audio = ledfx.audio
     if audio is None:
         return
 
@@ -42,9 +60,7 @@ def _sync_active_stream(ledfx, server_id: str, *, restart: bool) -> None:
     if active_name != f"SENDSPIN: {server_id}":
         return
 
-    _LOGGER.info(
-        "Sendspin server '%s' changed; stopping active stream.", server_id
-    )
+    _LOGGER.info("Sendspin server '%s' changed; stopping active stream.", server_id)
     audio.deactivate()
 
     if restart and AudioInputSource._callbacks:
@@ -74,9 +90,7 @@ class SendspinServerEndpoint(RestEndpoint):
 
         servers = self._ledfx.config.get("sendspin_servers", {})
         if server_id not in servers:
-            return await self.invalid_request(
-                f"Server '{server_id}' not found."
-            )
+            return await self.invalid_request(f"Server '{server_id}' not found.")
 
         url_changed = False
         if "server_url" in data:
@@ -108,9 +122,7 @@ class SendspinServerEndpoint(RestEndpoint):
             message=f"Sendspin server '{server_id}' updated.",
         )
 
-    async def delete(
-        self, server_id: str, request: web.Request
-    ) -> web.Response:
+    async def delete(self, server_id: str, request: web.Request) -> web.Response:
         """Remove a Sendspin server configuration."""
         if not _sendspin_available():
             return await self.invalid_request(
@@ -119,9 +131,7 @@ class SendspinServerEndpoint(RestEndpoint):
 
         servers = self._ledfx.config.get("sendspin_servers", {})
         if server_id not in servers:
-            return await self.invalid_request(
-                f"Server '{server_id}' not found."
-            )
+            return await self.invalid_request(f"Server '{server_id}' not found.")
 
         del servers[server_id]
 

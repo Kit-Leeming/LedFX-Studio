@@ -18,8 +18,10 @@ def loopback_devices():
     if sc is None:
         return []
     try:
-        return [mic for mic in sc.all_microphones(include_loopback=True) if mic.isloopback]
-    except Exception as exc:
+        return [
+            mic for mic in sc.all_microphones(include_loopback=True) if mic.isloopback
+        ]
+    except Exception as exc:  # noqa: BLE001 - audio drivers raise backend-specific errors
         _LOGGER.warning("Could not enumerate Windows playback loopbacks: %s", exc)
         return []
 
@@ -50,7 +52,9 @@ class WindowsLoopbackStream:
             raise OSError("Timed out opening Windows playback loopback")
         if self._start_error:
             self.stop()
-            raise OSError("Could not open Windows playback loopback") from self._start_error
+            raise OSError(
+                "Could not open Windows playback loopback"
+            ) from self._start_error
 
     def _capture(self):
         import comtypes
@@ -73,7 +77,7 @@ class WindowsLoopbackStream:
                     if len(samples):
                         mono = np.asarray(samples.mean(axis=1), dtype=np.float32)
                         self.callback(mono, len(mono), None, None)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - audio drivers raise backend-specific errors
             if not self._ready.is_set():
                 self._start_error = exc
                 self._ready.set()

@@ -1,13 +1,15 @@
 import copy
 import tempfile
 import unittest
-from pathlib import Path
 from types import SimpleNamespace
+from typing import ClassVar
 from unittest.mock import patch
 
-from ledfx.effects.singleColor import SingleColorEffect
-from ledfx.effects.scroll import ScrollAudioEffect
+import voluptuous as vol
+
 from ledfx.effects.gradient import GradientEffect
+from ledfx.effects.scroll import ScrollAudioEffect
+from ledfx.effects.singleColor import SingleColorEffect
 from ledfx.studio import Studio, color_fields, theme_config
 
 THEME = {
@@ -21,7 +23,7 @@ THEME = {
 
 
 class Effects:
-    classes = {
+    classes: ClassVar[dict[str, type]] = {
         "singleColor": SingleColorEffect,
         "scroll": ScrollAudioEffect,
         "gradient": GradientEffect,
@@ -31,9 +33,7 @@ class Effects:
         return self.classes[kind]
 
     def create(self, ledfx, type, config):
-        return SimpleNamespace(
-            type=type, config=self.get_class(type).schema()(config)
-        )
+        return SimpleNamespace(type=type, config=self.get_class(type).schema()(config))
 
 
 class Virtual:
@@ -46,9 +46,7 @@ class Virtual:
         self.virtual_cfg = {}
         self.active_effect = SimpleNamespace(
             type="singleColor",
-            config=SingleColorEffect.schema()(
-                {"color": "#ffffff", "brightness": 0.4}
-            ),
+            config=SingleColorEffect.schema()({"color": "#ffffff", "brightness": 0.4}),
         )
         self.update_effect_config(self.active_effect)
         self.fail = False
@@ -114,15 +112,13 @@ class StudioTests(unittest.TestCase):
         self.studio.apply([{"id": "a", "theme": "rose"}])
         original = self.studio.snapshot(["a"])
         self.studio.apply([{"id": "a", "type": "gradient"}])
-        self.assertEqual(
-            self.a.active_effect.config["gradient"], THEME["gradient"]
-        )
+        self.assertEqual(self.a.active_effect.config["gradient"], THEME["gradient"])
         self.studio.undo()
         self.assertEqual(self.studio.snapshot(["a"]), original)
 
     def test_invalid_batch_changes_nothing(self):
         before = self.studio.snapshot(["a", "b"])
-        with self.assertRaises(Exception):
+        with self.assertRaises(vol.Invalid):
             self.studio.apply(
                 [
                     {"id": "a", "config": {"brightness": 0.7}},
@@ -133,13 +129,11 @@ class StudioTests(unittest.TestCase):
         self.assertEqual(len(self.studio.history), 0)
 
     def test_batch_validates_even_if_factory_does_not(self):
-        self.ledfx.effects.create = (
-            lambda ledfx, type, config: SimpleNamespace(
-                type=type, config=config
-            )
+        self.ledfx.effects.create = lambda ledfx, type, config: SimpleNamespace(
+            type=type, config=config
         )
         before = self.studio.snapshot(["a", "b"])
-        with self.assertRaises(Exception):
+        with self.assertRaises(vol.Invalid):
             self.studio.apply(
                 [
                     {"id": "a", "config": {"brightness": 0.7}},
@@ -205,9 +199,7 @@ class StudioTests(unittest.TestCase):
         data = copy.deepcopy(self.studio.data)
         data["effect_presets"]["x"] = {
             "name": "x",
-            "virtuals": {
-                "a": {"type": "singleColor", "config": {"color": "#ff0000"}}
-            },
+            "virtuals": {"a": {"type": "singleColor", "config": {"color": "#ff0000"}}},
         }
         with self.assertRaisesRegex(ValueError, "colour fields"):
             self.studio.save_library(data)
@@ -217,9 +209,7 @@ class StudioTests(unittest.TestCase):
         self.studio.apply([{"id": "a", "theme": "rose"}])
         self.assertIsNone(self.a.active_effect)
         self.studio.apply([{"id": "a", "type": "singleColor"}])
-        self.assertEqual(
-            self.a.active_effect.config["color"], THEME["primary"]
-        )
+        self.assertEqual(self.a.active_effect.config["color"], THEME["primary"])
 
     def test_colour_mapping_overrides(self):
         theme = copy.deepcopy(THEME)

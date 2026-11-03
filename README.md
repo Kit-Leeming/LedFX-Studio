@@ -37,10 +37,11 @@ Studio rejects overlapping virtuals instead of silently switching other outputs 
 
 ## Status
 
-This is a personal development fork based on upstream LedFx **2.1.9**
-(commit `a6e73a886dc6252b9df2a9c5d3e8928e07fffa61`). It is not an official LedFx release.
-The [upstream review](UPSTREAM_REVIEW.md) records the 14 October 2026 comparison
-with 2.2.1; it is a dated review, not a claim about today's latest release.
+This fork includes upstream LedFx **2.2.1**, the latest non-prerelease release
+verified on **3 November 2026** (tag `v2.2.1`, commit
+`e25a9b52f6d6503c2f4ff000414924ce8e110b66`). It is not an official LedFx release.
+Only the stable tag was merged; unreleased upstream `main` was not imported.
+The [upgrade record](UPSTREAM_REVIEW.md) describes retained custom paths and validation.
 
 Source and build scripts are provided. **There is no prebuilt download attached
 here yet.** The locally installed portable executable is intentionally excluded
@@ -88,7 +89,9 @@ uv run --no-sync python -m pytest --noconftest tests/test_beat_scan.py tests/tes
 ```
 
 The `--noconftest` flag avoids upstream's hardware/API integration fixtures for
-these focused deterministic tests. See [architecture and source map](docs/STUDIO_ARCHITECTURE.md)
+these focused deterministic tests. Stable-upgrade validation also covers output
+lifecycle, RGBW compatibility, E1.31 source ports, origin policy, audio selection
+and Sendspin. See the upgrade record for the exact scope. See [architecture and source map](docs/STUDIO_ARCHITECTURE.md)
 for a quick route through the code.
 
 ## Reading this repo with ChatGPT

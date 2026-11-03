@@ -1,49 +1,70 @@
-# Upstream review — 14 October 2026
+# Stable upstream upgrade — 3 November 2026
 
-The local checkout is based on `a6e73a886dc6252b9df2a9c5d3e8928e07fffa61`
-(27 September 2026); both pyproject.toml and ledfx/consts.py report version 2.1.9.
-The latest stable release verified on GitHub and PyPI is 2.2.1, released
-4 October 2026, commit `e25a9b52f6d6503c2f4ff000414924ce8e110b66`.
-`git rev-list --left-right --count HEAD...v2.2.1` returned `0 80`.
-The release tags were fetched for comparison. No upstream code has been merged.
+## Target and result
+
+Merged **v2.2.1**, upstream commit
+`e25a9b52f6d6503c2f4ff000414924ce8e110b66`.
+GitHub's latest-release API and releases page were checked on 3 November 2026;
+this release is neither a draft nor a prerelease. The merge includes the stable
+2.2.0 changes and 2.2.1 repairs. Unreleased main/API v2 migrations were excluded.
 
 Sources:
 - https://github.com/LedFx/LedFx/releases/tag/v2.2.1
 - https://github.com/LedFx/LedFx/releases/tag/v2.2.0
-- https://pypi.org/project/LedFx/2.2.1/
 
-2.2.0 updates include Python/dependency changes, now-playing additions and audio
-selection/Sendspin fixes. 2.2.1 adds device output after configuration changes,
-E1.31 universe and source-port fixes, render/config/transition repairs, Web Audio
-validation, discovery cleanup, integrations and Windows installer fixes.
-For this portable fork the installer changes are less relevant than the backend
-repairs. Use stable 2.2.1 as the merge target: its release notes explicitly retain
-2.2.0's configuration format and v1 API, excluding main's migration/API v2 work.
+The earlier 14 October review is retained in this file's Git history.
 
-## Suggested merge procedure
+## Retained custom behaviour
 
-1. Preserve the existing config and running portable distribution. Capture the
-   current root changes, untracked custom effects and frontend submodule changes
-   into a reviewable fork branch/snapshot before updating. Do not clean/reset this
-   checkout or overwrite it with an official release binary.
-2. Merge v2.2.1 in an isolated checkout and resolve overlapping changes deliberately.
-   Local modifications overlap upstream in audio.py, virtuals.py, api/utils.py,
-   devices/__init__.py, ddp.py, packets.py, udp.py, wled.py, hiddenimports.py and
-   dependency files. Keep WASAPI loopback, RGBW/independent-white behaviour,
-   Beat Scan and wash effects. Review upstream dependency upgrades against the
-   project's Python 3.12 runtime and portable caches.
-3. Retain the frontend source changes for wash categories and the root PUBLIC_URL /
-   routing fix. Rebuild from source; do not replace the customised frontend with
-   upstream's bundled assets. Preserve the new public/studio assets and backend.
-4. Review API origin-policy/auth-related changes with the existing local browser,
-   Home Assistant and other clients before applying them. Keep API v1 compatibility.
-5. Run the Studio and custom-effect tests, isolated packaged API tests, then real
-   audio/physical controller checks for WLED RGBW, DDP and E1.31. Check gradients,
-   transitions, device pixel-count changes, output after reconfiguration, classic
-   scenes and Studio theme/preset persistence.
-6. Deploy a tested staged distribution with a recoverable previous runtime/config.
+- Studio's separate library, rigs, themes, effect/colour arrangements and Undo.
+- Vendored frontend source and custom built frontend, including Studio assets,
+  wash categories and the portable root route fix.
+- Windows WASAPI playback-loopback adapter and its Windows-only dependency.
+- Beat Scan and all six wash effects.
+- RGBW packet builders, independent white/UV output, RGB-only preview events,
+  and channel-aware pixel writes.
+- Portable launcher and build scripts.
 
-The new Studio is deliberately independent of upstream scene storage: a separate
-versioned studio.json contains rigs, colour themes, effect/colour arrangements,
-paired scene references and current theme assignments. The legacy scene browser
-is unchanged. This reduces conflict with the eventual stable merge.
+WLED output keys now include the custom RGBW/independent-white settings, so
+changing the fourth-channel mode rebuilds the sender instead of retaining the
+old packet type. Stable's scalar RGB write repair is retained for both RGB and
+RGBW device buffers. Custom metadata annotations/imports were aligned with
+upstream's lint rules; no new product features were added.
+
+## Upstream repairs of particular relevance
+
+- E1.31 senders use ephemeral source ports, avoiding collisions on UDP 5568.
+- E1.31 channel/universe boundaries and live output reconfiguration are fixed.
+- IP changes invalidate cached destinations before resolving the new address.
+- Render failures are contained; config validation and transitions are repaired.
+- Stable origin/host policy and resource/security repairs are retained.
+- Sendspin uses the stable-compatible aiosendspin 9.1.1 API.
+
+## Dependencies and automation
+
+The Python range is 3.11–3.14. The lock was regenerated from the stable lock plus
+SoundCard for the retained Windows loopback adapter; the automatic merge's mixed
+NumPy references were not used. Package metadata points to the fork's README.md.
+
+Upstream-specific release/publish workflows are retained as reference under
+`.github/upstream-workflows/`, where GitHub does not execute them. The fork's
+focused source-check workflow remains active. No official LedFx release,
+container registry or installer publishing credentials are assumed.
+
+## Validation
+
+- 14 Studio behaviour tests passed with the stable dependency environment.
+- 304 selected custom/upstream regression cases passed, covering custom effects,
+  device lifecycle, runtime pixel count, origin policy (including an isolated
+  running API), audio selection, typing regressions and Sendspin lifecycle.
+- One upstream port-ownership test was deselected locally because the separate
+  production app already owns UDP 5568. A dedicated custom test instead created
+  two real stable sender sockets simultaneously and verified distinct ephemeral
+  source ports, without starting their threads or sending light-control traffic.
+- The browser loaded Studio from a clean isolated 2.2.1 API, applied effects and
+  a theme to dummy devices, switched effects and performed Undo successfully.
+- Retained custom/merged paths passed the stable Ruff checks.
+
+This record concerns repository/source compatibility. Updating this checkout does
+not replace a separately running older portable executable. Physical fixture
+behaviour requires live verification after any separately authorized deployment.

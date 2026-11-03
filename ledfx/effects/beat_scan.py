@@ -1,5 +1,7 @@
 """Launch overlapping, energy-driven scans on tempo-tracked beats."""
 
+from typing import ClassVar
+
 import numpy as np
 import voluptuous as vol
 
@@ -11,7 +13,7 @@ from ledfx.effects.gradient import GradientEffect
 class BeatScanAudioEffect(AudioReactiveEffect, GradientEffect):
     NAME = "Beat Scan"
     CATEGORY = "BPM"
-    HIDDEN_KEYS = ["gradient_roll"]
+    HIDDEN_KEYS: ClassVar[list[str]] = ["gradient_roll"]
 
     CONFIG_SCHEMA = vol.Schema(
         {

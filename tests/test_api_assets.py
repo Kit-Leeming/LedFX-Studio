@@ -15,6 +15,7 @@ from PIL import Image
 
 from tests.test_utilities.consts import BASE_PORT
 from tests.test_utilities.naughty_strings import naughty_paths
+from tests.test_utilities.test_utils import TEST_CONFIG_DIR
 
 # Test URLs - Use 127.0.0.1 instead of localhost to avoid Windows DNS resolution delay (~2s per request)
 ASSETS_API_URL = f"http://127.0.0.1:{BASE_PORT}/api/assets"
@@ -91,9 +92,7 @@ class TestAssetsAPIUpload:
 
     def test_upload_valid_png(self, sample_png_bytes):
         """Test uploading a valid PNG asset."""
-        files = {
-            "file": ("icon.png", io.BytesIO(sample_png_bytes), "image/png")
-        }
+        files = {"file": ("icon.png", io.BytesIO(sample_png_bytes), "image/png")}
         data = {"path": "test_icon.png"}
 
         resp = requests.post(ASSETS_API_URL, files=files, data=data, timeout=5)
@@ -103,15 +102,11 @@ class TestAssetsAPIUpload:
         assert result["data"]["path"] == "test_icon.png"
 
         # Cleanup
-        requests.delete(
-            ASSETS_API_URL, params={"path": "test_icon.png"}, timeout=5
-        )
+        requests.delete(ASSETS_API_URL, params={"path": "test_icon.png"}, timeout=5)
 
     def test_upload_invalid_extension(self, sample_png_bytes):
         """Test that invalid file extension is rejected."""
-        files = {
-            "file": ("file.txt", io.BytesIO(sample_png_bytes), "text/plain")
-        }
+        files = {"file": ("file.txt", io.BytesIO(sample_png_bytes), "text/plain")}
         data = {"path": "file.txt"}
 
         resp = requests.post(ASSETS_API_URL, files=files, data=data, timeout=5)
@@ -139,14 +134,10 @@ class TestAssetsAPIUpload:
         Reserved device names without path separators are tested separately in naughty_filenames.
         """
         for naughty_path in naughty_paths:
-            files = {
-                "file": ("evil.png", io.BytesIO(sample_png_bytes), "image/png")
-            }
+            files = {"file": ("evil.png", io.BytesIO(sample_png_bytes), "image/png")}
             data = {"path": naughty_path}
 
-            resp = requests.post(
-                ASSETS_API_URL, files=files, data=data, timeout=5
-            )
+            resp = requests.post(ASSETS_API_URL, files=files, data=data, timeout=5)
             assert resp.status_code == 200
             result = resp.json()
             assert result["status"] == "failed"
@@ -165,9 +156,7 @@ class TestAssetsAPIUpload:
     def test_download_asset(self, sample_png_bytes):
         """Test downloading an existing asset."""
         # Upload first
-        files = {
-            "file": ("download.png", io.BytesIO(sample_png_bytes), "image/png")
-        }
+        files = {"file": ("download.png", io.BytesIO(sample_png_bytes), "image/png")}
         data = {"path": "test_download.png"}
         resp = requests.post(ASSETS_API_URL, files=files, data=data, timeout=5)
         assert resp.status_code == 200
@@ -184,9 +173,7 @@ class TestAssetsAPIUpload:
         assert resp.content == sample_png_bytes
 
         # Cleanup
-        requests.delete(
-            ASSETS_API_URL, params={"path": "test_download.png"}, timeout=5
-        )
+        requests.delete(ASSETS_API_URL, params={"path": "test_download.png"}, timeout=5)
 
     def test_download_nonexistent_asset(self):
         """Test that downloading non-existent asset returns error."""
@@ -204,9 +191,7 @@ class TestAssetsAPIUpload:
     def test_download_builtin_asset(self):
         """Test downloading a built-in asset using builtin:// prefix."""
         # Get list of built-in assets
-        resp = requests.get(
-            f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5
-        )
+        resp = requests.get(f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5)
         assert resp.status_code == 200
         builtin_assets = resp.json().get("assets", [])
 
@@ -245,9 +230,7 @@ class TestAssetsAPIUpload:
     def test_download_get_existing_asset(self, sample_png_bytes):
         """Test downloading an existing asset via GET request."""
         # Upload first
-        files = {
-            "file": ("download.png", io.BytesIO(sample_png_bytes), "image/png")
-        }
+        files = {"file": ("download.png", io.BytesIO(sample_png_bytes), "image/png")}
         data = {"path": "test_download_get.png"}
         resp = requests.post(ASSETS_API_URL, files=files, data=data, timeout=5)
         assert resp.status_code == 200
@@ -282,9 +265,7 @@ class TestAssetsAPIUpload:
     def test_download_get_builtin_asset(self):
         """Test downloading a built-in asset via GET using builtin:// prefix."""
         # Get list of built-in assets
-        resp = requests.get(
-            f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5
-        )
+        resp = requests.get(f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5)
         assert resp.status_code == 200
         builtin_assets = resp.json().get("assets", [])
 
@@ -379,9 +360,7 @@ class TestAssetsAPIDelete:
     def test_delete_existing_asset(self, sample_png_bytes):
         """Test deleting an existing asset."""
         # Upload first
-        files = {
-            "file": ("todelete.png", io.BytesIO(sample_png_bytes), "image/png")
-        }
+        files = {"file": ("todelete.png", io.BytesIO(sample_png_bytes), "image/png")}
         data = {"path": "test_delete.png"}
         resp = requests.post(ASSETS_API_URL, files=files, data=data, timeout=5)
         assert resp.status_code == 200
@@ -419,9 +398,7 @@ class TestAssetsAPIDelete:
     def test_delete_with_json_body(self, sample_png_bytes):
         """Test that DELETE also works with JSON body (fallback for some browsers)."""
         # Upload first
-        files = {
-            "file": ("jsontest.png", io.BytesIO(sample_png_bytes), "image/png")
-        }
+        files = {"file": ("jsontest.png", io.BytesIO(sample_png_bytes), "image/png")}
         data = {"path": "test_delete_json.png"}
         resp = requests.post(ASSETS_API_URL, files=files, data=data, timeout=5)
         assert resp.status_code == 200
@@ -458,9 +435,7 @@ class TestAssetsAPIIntegration:
         asset_path = "lifecycle_test.png"
 
         # 1. Upload
-        files = {
-            "file": ("test.png", io.BytesIO(sample_png_bytes), "image/png")
-        }
+        files = {"file": ("test.png", io.BytesIO(sample_png_bytes), "image/png")}
         data = {"path": asset_path}
         resp = requests.post(ASSETS_API_URL, files=files, data=data, timeout=5)
         assert resp.status_code == 200
@@ -474,9 +449,7 @@ class TestAssetsAPIIntegration:
         asset_paths = [asset["path"] for asset in result["assets"]]
         assert asset_path in asset_paths
         # Find the asset and verify metadata
-        asset_metadata = next(
-            a for a in result["assets"] if a["path"] == asset_path
-        )
+        asset_metadata = next(a for a in result["assets"] if a["path"] == asset_path)
         assert "size" in asset_metadata
         assert "modified" in asset_metadata
         assert "width" in asset_metadata
@@ -493,9 +466,7 @@ class TestAssetsAPIIntegration:
         assert resp.content == sample_png_bytes
 
         # 4. Delete
-        resp = requests.delete(
-            ASSETS_API_URL, params={"path": asset_path}, timeout=5
-        )
+        resp = requests.delete(ASSETS_API_URL, params={"path": asset_path}, timeout=5)
         assert resp.status_code == 200
         result = resp.json()
         assert result["status"] == "success"
@@ -878,13 +849,43 @@ class TestAssetsAPIThumbnail:
         assert max(img.size) <= 64
 
         # Cleanup
-        requests.delete(
-            ASSETS_API_URL, params={"path": "test_animated.gif"}, timeout=5
-        )
+        requests.delete(ASSETS_API_URL, params={"path": "test_animated.gif"}, timeout=5)
 
-    def test_thumbnail_animated_gif_explicit_true(
-        self, sample_animated_gif_bytes
-    ):
+    def test_thumbnail_refuses_oversized_animation_on_disk(self):
+        """An asset placed on disk past the frame cap gets no animated thumbnail."""
+        from ledfx.utilities.security_utils import MAX_IMAGE_FRAMES
+
+        frames = [
+            Image.new("RGB", (1, 1), color=(255 * (i % 2), 0, 0))
+            for i in range(MAX_IMAGE_FRAMES + 1)
+        ]
+        path = os.path.join(TEST_CONFIG_DIR, "assets", "test_too_many_frames.gif")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        frames[0].save(path, "GIF", save_all=True, append_images=frames[1:])
+        try:
+            resp = requests.post(
+                ASSETS_THUMBNAIL_API_URL,
+                json={"path": "test_too_many_frames.gif", "size": 64},
+                timeout=5,
+            )
+            assert resp.json()["status"] == "failed"
+
+            # The static first-frame thumbnail still works.
+            resp = requests.post(
+                ASSETS_THUMBNAIL_API_URL,
+                json={
+                    "path": "test_too_many_frames.gif",
+                    "size": 64,
+                    "animated": False,
+                },
+                timeout=5,
+            )
+            assert resp.status_code == 200
+            assert resp.headers["Content-Type"] == "image/png"
+        finally:
+            os.remove(path)
+
+    def test_thumbnail_animated_gif_explicit_true(self, sample_animated_gif_bytes):
         """Test generating animated WebP thumbnail with explicit animated=true."""
         # Upload animated GIF asset
         files = {
@@ -1229,9 +1230,7 @@ class TestAssetsAPIThumbnail:
             assert "boolean" in result["payload"]["reason"].lower()
 
         # Cleanup
-        requests.delete(
-            ASSETS_API_URL, params={"path": "test_validate.png"}, timeout=5
-        )
+        requests.delete(ASSETS_API_URL, params={"path": "test_validate.png"}, timeout=5)
 
 
 class TestAssetsAPIAnimationMetadata:
@@ -1272,9 +1271,7 @@ class TestAssetsAPIAnimationMetadata:
         # List assets and find uploaded one
         resp = requests.get(ASSETS_API_URL, timeout=5)
         data = resp.json()
-        assets = [
-            a for a in data["assets"] if a["path"] == "test_static_meta.png"
-        ]
+        assets = [a for a in data["assets"] if a["path"] == "test_static_meta.png"]
 
         assert len(assets) == 1
         asset = assets[0]
@@ -1293,9 +1290,7 @@ class TestAssetsFixedAPI:
 
     def test_assets_fixed_endpoint_exists(self):
         """Test that /api/assets_fixed endpoint is accessible."""
-        resp = requests.get(
-            f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5
-        )
+        resp = requests.get(f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5)
         assert resp.status_code == 200
         data = resp.json()
         assert "assets" in data
@@ -1303,9 +1298,7 @@ class TestAssetsFixedAPI:
 
     def test_assets_fixed_metadata_structure(self):
         """Test that built-in assets have correct metadata structure."""
-        resp = requests.get(
-            f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5
-        )
+        resp = requests.get(f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5)
         assert resp.status_code == 200
         data = resp.json()
 
@@ -1333,9 +1326,7 @@ class TestAssetsFixedAPI:
 
     def test_assets_fixed_paths_relative(self):
         """Test that built-in asset paths are relative to gifs directory."""
-        resp = requests.get(
-            f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5
-        )
+        resp = requests.get(f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5)
         assert resp.status_code == 200
         data = resp.json()
 
@@ -1353,9 +1344,7 @@ class TestAssetsThumbnailBuiltinSupport:
     def test_thumbnail_builtin_asset(self):
         """Test generating thumbnail for built-in asset using builtin:// prefix."""
         # First, get list of built-in assets
-        resp = requests.get(
-            f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5
-        )
+        resp = requests.get(f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5)
         assert resp.status_code == 200
         data = resp.json()
 
@@ -1388,9 +1377,7 @@ class TestAssetsThumbnailBuiltinSupport:
     def test_thumbnail_user_vs_builtin_separation(self, sample_png_bytes):
         """Test that user and built-in assets are clearly separated with prefix."""
         # Get a built-in asset name
-        resp = requests.get(
-            f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5
-        )
+        resp = requests.get(f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5)
         data = resp.json()
 
         if len(data["assets"]) == 0:
@@ -1407,9 +1394,7 @@ class TestAssetsThumbnailBuiltinSupport:
             )
         }
         upload_data = {"path": builtin_asset_name}
-        resp = requests.post(
-            ASSETS_API_URL, files=files, data=upload_data, timeout=5
-        )
+        resp = requests.post(ASSETS_API_URL, files=files, data=upload_data, timeout=5)
         assert resp.status_code == 200
 
         # Request thumbnail WITHOUT prefix - should get user asset
@@ -1431,16 +1416,12 @@ class TestAssetsThumbnailBuiltinSupport:
         assert resp.status_code == 200
 
         # Cleanup
-        requests.delete(
-            ASSETS_API_URL, params={"path": builtin_asset_name}, timeout=5
-        )
+        requests.delete(ASSETS_API_URL, params={"path": builtin_asset_name}, timeout=5)
 
     def test_thumbnail_builtin_nested_path(self):
         """Test generating thumbnail for nested built-in asset path with builtin:// prefix."""
         # Get list of built-in assets to find nested ones
-        resp = requests.get(
-            f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5
-        )
+        resp = requests.get(f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5)
         assert resp.status_code == 200
         data = resp.json()
 
@@ -1707,9 +1688,7 @@ class TestAssetsThumbnailGET:
     def test_thumbnail_get_builtin_asset(self):
         """Test generating thumbnail for built-in asset via GET."""
         # Get list of built-in assets
-        resp = requests.get(
-            f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5
-        )
+        resp = requests.get(f"http://127.0.0.1:{BASE_PORT}/api/assets_fixed", timeout=5)
         assert resp.status_code == 200
         builtin_assets = resp.json().get("assets", [])
 
@@ -1836,9 +1815,7 @@ class TestAssetsThumbnailGET:
             timeout=5,
         )
 
-    def test_thumbnail_get_animated_case_insensitive(
-        self, sample_animated_gif_bytes
-    ):
+    def test_thumbnail_get_animated_case_insensitive(self, sample_animated_gif_bytes):
         """Test that animated parameter is case-insensitive via GET."""
         # Upload animated GIF
         files = {

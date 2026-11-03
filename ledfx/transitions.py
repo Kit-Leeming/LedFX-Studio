@@ -1,4 +1,6 @@
 import logging
+from collections.abc import Callable
+from typing import ClassVar
 
 import numpy as np
 
@@ -7,7 +9,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class IterClass(type):
     def __iter__(cls):
-        yield from getattr(cls, "NAMED_FUNCTIONS").keys()
+        yield from cls.NAMED_FUNCTIONS.keys()
 
 
 class Transitions(metaclass=IterClass):
@@ -24,10 +26,10 @@ class Transitions(metaclass=IterClass):
         self.iris_array = np.concatenate([i[::2], i[-1 + len(i) % -2 :: -2]])
 
     def __getitem__(cls, mode):
-        return getattr(cls, "NAMED_FUNCTIONS")[mode]
+        return cls.NAMED_FUNCTIONS[mode]
 
     def __setitem__(cls, mode):
-        raise Exception("Don't you be setting these values cheeky ;)")
+        raise Exception("Don't you be setting these values cheeky ;)")  # noqa: TRY002
 
     def _validate(x1, x2, weight):
         assert np.shape(x1) == np.shape(x2)
@@ -100,7 +102,12 @@ class Transitions(metaclass=IterClass):
         else:
             np.clip(x1, None, 255 * 2 * (weight - 0.5), x1)
 
-    NAMED_FUNCTIONS = {
+    def none(self, x1: np.ndarray, x2: np.ndarray, weight: float) -> None:
+        """
+        leaves x1 unchanged: switching to "None" mid-transition cuts to the new effect
+        """
+
+    NAMED_FUNCTIONS: ClassVar[dict[str, Callable]] = {
         "Add": add,
         "Dissolve": dissolve,
         "Push": push,
@@ -108,5 +115,5 @@ class Transitions(metaclass=IterClass):
         "Iris": iris,
         "Through White": throughWhite,
         "Through Black": throughBlack,
-        "None": "None",
+        "None": none,
     }

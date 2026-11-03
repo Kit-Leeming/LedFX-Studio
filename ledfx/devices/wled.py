@@ -1,4 +1,5 @@
 import logging
+from typing import ClassVar
 
 import numpy as np
 import voluptuous as vol
@@ -18,6 +19,17 @@ class WLEDDevice(NetworkedDevice):
     This class fetches its config (px count, etc) from the WLED device
     at launch, and lets the user choose a sync mode to use.
     """
+
+    # The settings setup_subdevice copies into the sender.
+    OUTPUT_KEYS = (
+        "sync_mode",
+        "name",
+        "ip_address",
+        "pixel_count",
+        "refresh_rate",
+        "independent_white",
+        "rgbw_led",
+    )
 
     CONFIG_SCHEMA = vol.Schema(
         {
@@ -49,7 +61,7 @@ class WLEDDevice(NetworkedDevice):
         }
     )
 
-    SYNC_MODES = {
+    SYNC_MODES: ClassVar[dict[str, type[NetworkedDevice]]] = {
         "UDP": UDPRealtimeDevice,
         "DDP": DDPDevice,
         "E131": E131Device,
@@ -90,16 +102,11 @@ class WLEDDevice(NetworkedDevice):
         }
 
     def config_updated(self, config):
-        if not isinstance(
-            self.subdevice, self.SYNC_MODES[self._config["sync_mode"]]
-        ) or (
-            self._config["sync_mode"] == "UDP"
-            and self.subdevice is not None
-            and self.subdevice.config["udp_packet_type"]
-            != ("DRGBW" if self.independent_white else "DNRGB")
-        ):
+        # Rebuild only when a setting the subdevice copies changes: rebuilding
+        # deactivates the sender, and E1.31 blanks the LEDs when it stops.
+        if getattr(self, "subdevice", None) is None or self._output_changed():
             self.setup_subdevice()
-        if self._pixels is not None:
+        if getattr(self, "_pixels", None) is not None:
             channels = 4 if self.independent_white else 3
             if self._pixels.shape[1] != channels:
                 self._pixels = np.zeros((self.pixel_count, channels))
@@ -123,12 +130,14 @@ class WLEDDevice(NetworkedDevice):
         config["pixel_count"] = self._config["pixel_count"]
         config["refresh_rate"] = self._config["refresh_rate"]
         if self._config["sync_mode"] == "UDP":
-            config["udp_packet_type"] = (
-                "DRGBW" if self.independent_white else "DNRGB"
-            )
+            config["udp_packet_type"] = "DRGBW" if self.independent_white else "DNRGB"
 
         self.subdevice = device(self._ledfx, config)
+        self._built_settings = self._output_settings()
         self.subdevice._destination = self._destination
+        # A sync_mode change on a live device must not leave the new sender idle.
+        if self._active:
+            self.subdevice.activate()
 
     def activate(self):
         if self.subdevice is None:
@@ -153,16 +162,13 @@ class WLEDDevice(NetworkedDevice):
 
     async def add_postamble(self):
         _LOGGER.debug("Doing post creation things for WLED...")
-        if (
-            self.config["create_segments"]
-            or self._ledfx.config["create_segments"]
-        ):
+        if self.config["create_segments"] or self._ledfx.config["create_segments"]:
             segments = await self.wled.get_segments()
             isMatrix = segments[0].get("stopY", 0) > 0
             if len(segments) > 1 or isMatrix:
                 for seg in segments:
                     if seg["stop"] - seg["start"] > 0:
-                        name = seg.get("n", f'Seg-{seg["id"]}')
+                        name = seg.get("n", f"Seg-{seg['id']}")
                         rows = seg.get("stopY", 1)
                         if not rows > 1:
                             self.sub_v(
@@ -198,9 +204,7 @@ class WLEDDevice(NetworkedDevice):
         # Currently *assuming* that this PR gets released in 0.13
         # https://github.com/Aircoookie/WLED/pull/1944
         if wled_support_DDP(wled_build):
-            _LOGGER.info(
-                "WLED Build Supports Sync Setting API: %s", wled_build
-            )
+            _LOGGER.info("WLED Build Supports Sync Setting API: %s", wled_build)
             await self.wled.get_sync_settings()
         # self.wled.enable_realtime_gamma()
         # self.wled.set_inactivity_timeout(self._config["timeout"])
