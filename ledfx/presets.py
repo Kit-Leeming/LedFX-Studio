@@ -3453,3 +3453,33 @@ ledfx_presets = {
         },
     },
 }
+
+# Starting looks for fixture-wide, audio-reactive wash effects.
+ledfx_presets.update(
+    {
+        "wash_frequency_color": {
+            "spectrum-blend": {"name": "Spectrum Blend", "config": {"color_mode": "Blend", "base_level": 0.12}},
+            "frequency-lead": {"name": "Frequency Lead", "config": {"color_mode": "Dominant", "color_smoothing": 0.35}},
+        },
+        "wash_band_conversation": {
+            "bass-and-snare": {"name": "Bass and Snare", "config": {"left_band": "Bass", "right_band": "Mids", "layout": "Split"}},
+            "alternating-spectrum": {"name": "Alternating Spectrum", "config": {"left_band": "Bass", "right_band": "High", "layout": "Alternate"}},
+        },
+        "wash_peak_ripple": {
+            "edge-ripples": {"name": "Edge Ripples", "config": {"origin": "Alternate Edges", "speed": 3.0}},
+            "center-boom": {"name": "Center Boom", "config": {"origin": "Center", "speed": 5.0, "width": 1.1}},
+        },
+        "wash_color_memory": {
+            "color-afterglow": {"name": "Color Afterglow", "config": {"selection": "Alternate", "memory_time": 3.0}},
+            "full-stage-memory": {"name": "Full Stage Memory", "config": {"selection": "All", "memory_time": 5.0}},
+        },
+        "wash_sonic_stream": {
+            "bass-stream": {"name": "Bass Stream", "config": {"frequency_band": "Bass", "flow": "Left to Right"}},
+            "center-stream": {"name": "Center Stream", "config": {"frequency_band": "Mids", "flow": "Center Out"}},
+        },
+        "wash_twinklecat": {
+            "subtle-glints": {"name": "Subtle Glints", "config": {"density": 0.25, "base_level": 0.17}},
+            "busy-glints": {"name": "Busy Glints", "config": {"density": 0.75, "speed": 2.2}},
+        },
+    }
+)

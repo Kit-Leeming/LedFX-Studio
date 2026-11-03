@@ -33,6 +33,7 @@ class HttpServer:
 
     def register_routes(self):
         self.api.register_routes(self.app)
+        self.app.router.add_static("/studio", path=ledfx_frontend.where() + "/studio", name="studio")
         self.app.router.add_static(
             "/favicon",
             path=ledfx_frontend.where() + "/favicon",

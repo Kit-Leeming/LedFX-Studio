@@ -1,0 +1,233 @@
+import { useEffect, useMemo, useCallback } from 'react'
+import { Chip, Alert, Collapse, useMediaQuery, Grid, Box, Stack } from '@mui/material'
+import useStore from '../../store/useStore'
+import NoYet from '../../components/NoYet'
+// import ScenesTable from './ScenesTable';
+import ScenesRecent from './ScenesRecent'
+import ScenesMostUsed from './ScenesMostUsed'
+import ScenesPlaylist from './ScenesPlaylist'
+import useStyles from './Scenes.styles'
+import { ISceneOrder } from '../../store/api/storeScenes'
+import SceneCard from './SceneCard'
+import BackendPlaylist from './BackendPlaylist/BackendPlaylist'
+import SortableCardGrid from '../../components/DnD/SortableCardGrid'
+
+const Scenes = () => {
+  const classes = useStyles()
+
+  const getScenes = useStore((state) => state.getScenes)
+  const scenes = useStore((state) => state.scenes)
+  const sceneOrder = useStore((state) => state.sceneOrder)
+  const setSceneOrder = useStore((state) => state.setSceneOrder)
+  const features = useStore((state) => state.features)
+  const activateScene = useStore((state) => state.activateScene)
+  const infoAlerts = useStore((state) => state.uiPersist.infoAlerts)
+  const setInfoAlerts = useStore((state) => state.setInfoAlerts)
+  const sceneActiveTags = useStore((state) => state.ui.sceneActiveTags)
+  // const xsmallScreen = useMediaQuery('(max-width: 475px)')
+  const mediumScreen = useMediaQuery('(max-width: 870px)')
+  // const largeScreen = useMediaQuery('(min-width: 1480px)')
+
+  const toggletSceneActiveTag = useStore((state) => state.ui.toggletSceneActiveTag)
+  const captivateScene = useStore((state) => state.captivateScene)
+
+  const handleActivateScene = async (e: string) => {
+    await activateScene(e)
+    setTimeout(async () => {
+      await getScenes()
+    }, 400)
+    if (scenes[e]?.scene_puturl && scenes[e]?.scene_payload)
+      captivateScene(scenes[e]?.scene_puturl, scenes[e]?.scene_payload)
+  }
+
+  useEffect(() => {
+    getScenes()
+  }, [getScenes])
+
+  useEffect(() => {
+    // initial scene order if not set
+    const sc = JSON.parse(JSON.stringify(sceneOrder)) as ISceneOrder[]
+    Object.keys(scenes).map((s, i) => {
+      if (!sc.some((o) => o.sceneId === s)) {
+        return sc.push({ sceneId: s, order: i })
+      }
+      return null
+    })
+    setSceneOrder(sc)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scenes])
+
+  const sceneFilter = (sc: string) =>
+    scenes[sc].scene_tags?.split(',').some((sce: string) => sceneActiveTags.includes(sce))
+
+  const sceneBlenderFilter = (sc: string) =>
+    scenes[sc] && !scenes[sc].scene_tags?.split(',')?.includes('blender')
+
+  const sortedSceneIds = useMemo(() => {
+    const filtered = (
+      sceneActiveTags.length ? Object.keys(scenes).filter(sceneFilter) : Object.keys(scenes)
+    ).filter(sceneBlenderFilter)
+
+    return filtered.sort((a, b) => {
+      const orderA = sceneOrder.find((o) => o.sceneId === a)?.order ?? 999
+      const orderB = sceneOrder.find((o) => o.sceneId === b)?.order ?? 999
+      return orderA - orderB
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scenes, sceneOrder, sceneActiveTags])
+
+  const handleSceneReorder = useCallback(
+    (newIds: string[]) => {
+      const newOrder: ISceneOrder[] = newIds.map((id, index) => ({
+        sceneId: id,
+        order: index
+      }))
+      // Preserve order entries for scenes not currently visible (e.g. filtered out)
+      const visibleSet = new Set(newIds)
+      const hiddenOrders = sceneOrder.filter((o) => !visibleSet.has(o.sceneId))
+      setSceneOrder([...newOrder, ...hiddenOrders])
+    },
+    [sceneOrder, setSceneOrder]
+  )
+
+  return (
+    <>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'column'
+        }}
+      >
+        <Collapse in={infoAlerts.scenes}>
+          <Alert
+            sx={{ mb: 2 }}
+            severity="info"
+            onClose={() => {
+              setInfoAlerts('scenes', false)
+            }}
+          >
+            Head over to Devices-Page and adjust all effects for all devices.
+            <br />
+            You can then save everything as a scene by using the <strong>+</strong> button
+          </Alert>
+        </Collapse>
+
+        <Stack
+          // The side column keeps its padding even when empty, stealing 32px
+          // from the card row. Stacked on phones the cards get the full width,
+          // matching the device cards.
+          direction={{ xs: 'column', sm: 'row' }}
+          // justifyContent={'center'}
+          alignItems={'flex-start'}
+        >
+          {scenes && Object.keys(scenes).length && (
+            <Stack direction={'column'} spacing={2} p={2} className="step-scenes-four">
+              {features.sceneRecent && (
+                <Box maxWidth={mediumScreen ? '100%' : 450} paddingBottom={0}>
+                  <ScenesRecent
+                    scenes={scenes}
+                    activateScene={handleActivateScene}
+                    title="Recent Scenes"
+                  />
+                </Box>
+              )}
+              {features.sceneMostUsed && (
+                <Box maxWidth={mediumScreen ? '100%' : 450} paddingBottom={0}>
+                  <ScenesMostUsed
+                    scenes={scenes}
+                    activateScene={handleActivateScene}
+                    title="Most Used Scenes"
+                  />
+                </Box>
+              )}
+              {features.scenePlaylist && (
+                <Box maxWidth={mediumScreen ? '100%' : 450} paddingBottom={0}>
+                  <ScenesPlaylist
+                    scenes={scenes}
+                    activateScene={handleActivateScene}
+                    title="Playlist"
+                  />
+                </Box>
+              )}
+              {features.scenePlaylistBackend && (
+                <Box maxWidth={mediumScreen ? '100%' : 450} paddingBottom={0}>
+                  <BackendPlaylist maxWidth={mediumScreen ? '100%' : 450} />
+                </Box>
+              )}
+            </Stack>
+          )}
+          <Box justifyContent={'center'} textAlign={'center'}>
+            {scenes && Object.keys(scenes).length && features.scenechips ? (
+              <div className="step-scenes-three">
+                {Object.keys(scenes)
+                  .flatMap((s) =>
+                    !!scenes[s].scene_tags && scenes[s].scene_tags !== ''
+                      ? scenes[s].scene_tags.split(',')
+                      : []
+                  )
+                  .filter((n) => !!n && n.trim())
+                  .filter((v, i, a) => a.indexOf(v) === i && v)
+                  .map((t) => {
+                    return (
+                      <Chip
+                        variant={sceneActiveTags.includes(t) ? 'filled' : 'outlined'}
+                        sx={{
+                          ml: 1,
+                          mt: 1,
+                          mr: 1,
+                          cursor: sceneActiveTags.includes(t) ? 'zoom-out' : 'zoom-in'
+                        }}
+                        key={t}
+                        label={t}
+                        onClick={() => toggletSceneActiveTag(t)}
+                      />
+                    )
+                  })}
+              </div>
+            ) : null}
+            <Grid
+              container
+              spacing={[0, 0, 2, 2, 2]}
+              justifyContent={'center'}
+              m={['0 auto', '0 auto', '0.5rem', '0.5rem', '0.5rem']}
+              className="step-scenes-one"
+              sx={{
+                // Full-bleed on phones so the cards reach the same width as the
+                // device cards; the auto margins only make sense once the row
+                // is narrower than the screen.
+                width: { xs: '100%', sm: 'auto' },
+                mx: { xs: 0, sm: undefined },
+                maxWidth: '100%',
+                overflowY: features.sceneScroll ? 'auto' : 'unset',
+                maxHeight: features.sceneScroll ? 'calc(100vh - 185px)' : 'auto'
+              }}
+            >
+              {scenes && Object.keys(scenes).length ? (
+                <SortableCardGrid items={sortedSceneIds} onReorder={handleSceneReorder}>
+                  {(id, dragHandleProps) => (
+                    <SceneCard
+                      key={id}
+                      sceneId={id}
+                      scene={scenes[id]}
+                      order={0}
+                      handleActivateScene={handleActivateScene}
+                      features={features}
+                      classes={classes}
+                      dragHandleProps={dragHandleProps}
+                    />
+                  )}
+                </SortableCardGrid>
+              ) : (
+                <NoYet type="Scene" />
+              )}
+            </Grid>
+          </Box>
+        </Stack>
+      </div>
+    </>
+  )
+}
+
+export default Scenes

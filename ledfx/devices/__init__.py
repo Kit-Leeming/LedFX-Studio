@@ -154,6 +154,7 @@ class Device(BaseRegistry):
             if len(item) == 2:
                 # New scatter mode: (pixels, dst_indices)
                 pixels, dst_indices = item
+                pixels = self._match_pixel_channels(pixels)
                 if pixels.shape[0] != 0:
                     try:
                         self._pixels[dst_indices] = pixels
@@ -170,11 +171,12 @@ class Device(BaseRegistry):
             else:
                 # Legacy range mode: (pixels, start, end)
                 pixels, start, end = item
+                pixels = self._match_pixel_channels(pixels)
                 # protect against an empty race condition
                 if pixels.shape[0] != 0:
-                    if np.shape(pixels) == (3,) or np.shape(
-                        self._pixels[start : end + 1]
-                    ) == np.shape(pixels):
+                    if np.shape(self._pixels[start : end + 1]) == np.shape(
+                        pixels
+                    ):
                         self._pixels[start : end + 1] = pixels
 
         # Only the priority virtual should flush to prevent multiple virtuals
@@ -186,12 +188,24 @@ class Device(BaseRegistry):
                 self.flush(frame)
 
                 self._ledfx.events.fire_event(
-                    DeviceUpdateEvent(self.id, frame)
+                    DeviceUpdateEvent(self.id, frame[:, :3])
                 )
         else:
             _LOGGER.warning(
                 "Flush skipped as %s has no priority_virtual", self.id
             )
+
+    def _match_pixel_channels(self, pixels):
+        """Keep the device buffer width while accepting an optional W channel."""
+        channels = self._pixels.shape[1]
+        if pixels.shape[-1] == channels:
+            return pixels
+        if channels == 3:
+            return pixels[..., :3]
+        if channels == 4 and pixels.shape[-1] == 3:
+            padding = ((0, 1),) if pixels.ndim == 1 else ((0, 0), (0, 1))
+            return np.pad(pixels, padding)
+        raise ValueError("Unsupported pixel channel count")
 
     def assemble_frame(self):
         """

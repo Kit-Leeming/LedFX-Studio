@@ -15,6 +15,12 @@
 # Python env
 env
 .venv
+.python/
+.uv-cache/
+.npm-cache/
+.tools/
+.pdm-build/
+portable-data/
 
 # NPM
 node_modules/
@@ -79,3 +85,18 @@ __pycache__/
 
 # AI stuff
 .claude/
+
+# Local portable runtime, private config and publication staging
+/publish/
+/deprecated_archive/
+/dist-*/
+/*.exe
+/.playwright-mcp/
+/.pytest_cache/
+/.ruff_cache/
+/portable-data/
+*.pem
+*.key
+.env
+.env.*
+!.env.example

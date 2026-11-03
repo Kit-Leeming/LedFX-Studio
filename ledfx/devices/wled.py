@@ -1,5 +1,6 @@
 import logging
 
+import numpy as np
 import voluptuous as vol
 
 from ledfx.devices import NetworkedDevice
@@ -40,6 +41,11 @@ class WLEDDevice(NetworkedDevice):
                 description="Icon for the device*",
                 default="wled",
             ): str,
+            vol.Optional(
+                "independent_white",
+                description="Send an independent fourth channel to an RGBW WLED output (for UV fixtures)",
+                default=False,
+            ): bool,
         }
     )
 
@@ -86,8 +92,25 @@ class WLEDDevice(NetworkedDevice):
     def config_updated(self, config):
         if not isinstance(
             self.subdevice, self.SYNC_MODES[self._config["sync_mode"]]
+        ) or (
+            self._config["sync_mode"] == "UDP"
+            and self.subdevice is not None
+            and self.subdevice.config["udp_packet_type"]
+            != ("DRGBW" if self.independent_white else "DNRGB")
         ):
             self.setup_subdevice()
+        if self._pixels is not None:
+            channels = 4 if self.independent_white else 3
+            if self._pixels.shape[1] != channels:
+                self._pixels = np.zeros((self.pixel_count, channels))
+
+    @property
+    def independent_white(self):
+        return bool(
+            self._config.get("independent_white")
+            and self._config.get("rgbw_led")
+            and self._config.get("sync_mode") in ("DDP", "UDP")
+        )
 
     def setup_subdevice(self):
         if self.subdevice is not None:
@@ -99,6 +122,10 @@ class WLEDDevice(NetworkedDevice):
         config["ip_address"] = self._config["ip_address"]
         config["pixel_count"] = self._config["pixel_count"]
         config["refresh_rate"] = self._config["refresh_rate"]
+        if self._config["sync_mode"] == "UDP":
+            config["udp_packet_type"] = (
+                "DRGBW" if self.independent_white else "DNRGB"
+            )
 
         self.subdevice = device(self._ledfx, config)
         self.subdevice._destination = self._destination
@@ -108,6 +135,8 @@ class WLEDDevice(NetworkedDevice):
             self.setup_subdevice()
         self.subdevice.activate()
         super().activate()
+        if self.independent_white:
+            self._pixels = np.zeros((self.pixel_count, 4))
 
     def deactivate(self):
         if self.subdevice is not None:
@@ -120,7 +149,7 @@ class WLEDDevice(NetworkedDevice):
             self.subdevice._destination = self._destination
 
     def flush(self, data):
-        self.subdevice.flush(data)
+        self.subdevice.flush(data if self.independent_white else data[:, :3])
 
     async def add_postamble(self):
         _LOGGER.debug("Doing post creation things for WLED...")

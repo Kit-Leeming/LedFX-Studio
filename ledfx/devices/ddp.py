@@ -32,7 +32,8 @@ class DDPDevice(UDPDevice):
     REPLY = 0x04
     STORAGE = 0x08
     TIME = 0x10
-    DATATYPE = 0x0B  # RGB (type=001), 8-bit (size=011)
+    DATATYPE = 0x0B  # RGB24
+    DATATYPE_RGBW = 0x1B  # RGBW32, as used by WLED
     SOURCE = 0x01
     TIMEOUT = 1
 
@@ -133,6 +134,9 @@ class DDPDevice(UDPDevice):
         Returns:
         None
         """
+        channels = data.shape[1]
+        if channels not in (3, 4):
+            raise ValueError("DDP frames must have three or four channels")
         sequence = frame_count % 15 + 1
         byteData = memoryview(data.astype(np.uint8).ravel())
         packets, remainder = divmod(len(byteData), DDPDevice.MAX_DATALEN)
@@ -151,6 +155,11 @@ class DDPDevice(UDPDevice):
                 byteData[data_start:data_end],
                 i == packets,
                 destination_id,
+                (
+                    DDPDevice.DATATYPE_RGBW
+                    if channels == 4
+                    else DDPDevice.DATATYPE
+                ),
             )
 
     @staticmethod
@@ -163,6 +172,7 @@ class DDPDevice(UDPDevice):
         data: Union[bytes, memoryview],
         last: bool,
         destination_id: int,
+        datatype: int = DATATYPE,
     ) -> None:
         """
         Sends a DDP packet over a socket to a specified destination.
@@ -185,7 +195,7 @@ class DDPDevice(UDPDevice):
             "!BBBBLH",
             DDPDevice.VER1 | (DDPDevice.PUSH if last else 0),
             sequence,
-            DDPDevice.DATATYPE,
+            datatype,
             destination_id,
             packet_count * DDPDevice.MAX_DATALEN,
             bytes_length,

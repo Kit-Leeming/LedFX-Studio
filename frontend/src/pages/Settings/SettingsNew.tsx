@@ -1,0 +1,275 @@
+import { useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Accordion, AccordionSummary, Chip, Grid, Stack, Typography, useTheme } from '@mui/material'
+import { SettingsAccordion, useStyles } from './SettingsComponents'
+import useStore from '../../store/useStore'
+import AudioCard from './AudioCard'
+import Webaudio from './Webaudio'
+import ClientAudioCard from './ClientAudioCard'
+import GeneralCard from './GeneralCard'
+import SmartBar from '../../components/Dialogs/SmartBar'
+import MidiCard from './MidiCard'
+import AssetManager from '../../components/Dialogs/AssetManager/AssetManager'
+import UIRow from './UIRow'
+import BottomBarCard from './BottomBarCard'
+import {
+  AccountTree,
+  Equalizer,
+  Keyboard,
+  LibraryMusic,
+  QueueMusic,
+  SettingsInputComponent,
+  SportsEsports,
+  People,
+  Cast
+} from '@mui/icons-material'
+import Tile from '../../components/Tile'
+import Uncategorized from './Uncategorized'
+
+const NOW_PLAYING_FEATURES = [
+  'Scene Triggers',
+  'Album Art',
+  'Gradients',
+  'Texter',
+  'Visualizers',
+  'Lyrics',
+  'Player'
+]
+
+const SettingsNew = () => {
+  const classes = useStyles()
+  const navigate = useNavigate()
+  const theme = useTheme()
+  const viewMode = useStore((state) => state.viewMode)
+  const features = useStore((state) => state.features)
+  const setSettingsExpanded = useStore((state) => state.ui.setSettingsExpanded)
+  const setGamepadOpen = useStore((state) => state.setGamepadOpen)
+  const setMidiOpen = useStore((state) => state.setMidiOpen)
+  const setKeybinding = useStore((state) => state.ui.setKeybinding)
+  const setSmartBarOpen = useStore((state) => state.ui.bars && state.ui.setSmartBarOpen)
+  const setPgs = useStore((state) => state.ui.setPgs)
+  const setSd = useStore((state) => state.ui.setSd)
+  const setSongDetectorScreenOpen = useStore((state) => state.ui.setSongDetectorScreenOpen)
+  const setSdPlus = useStore((state) => state.ui.setSdPlus)
+  const setDialogOpenClientManagement = useStore((state) => state.setDialogOpenClientManagement)
+  const setDialogOpenSendspinManager = useStore((state) => state.setDialogOpenSendspinManager)
+  const backendFeatures = useStore((state) => state.backendFeatures)
+  const coreParams = useStore((state) => state.coreParams)
+
+  const isCC = coreParams && Object.keys(coreParams).length > 0
+
+  const loc = useLocation()
+
+  useEffect(() => {
+    const quick = ['devices', 'scenes', 'uimode', 'effects', 'pixelgraphs']
+    quick.forEach((q) => {
+      if (loc.search.indexOf(q) > -1) {
+        setSettingsExpanded(`panel${q}`)
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loc])
+
+  return (
+    <div className={classes.card} style={{ marginBottom: '3rem' }}>
+      <UIRow />
+      <Accordion disabled sx={{ backgroundColor: 'transparent !important' }}>
+        <AccordionSummary aria-controls="panel3a-content" id="panel3a-header">
+          <Typography>Config</Typography>
+        </AccordionSummary>
+      </Accordion>
+      <SettingsAccordion title="General" accId="3" icon="Settings">
+        <GeneralCard />
+      </SettingsAccordion>
+      <SettingsAccordion title="Audio" accId="1a" icon="Speaker">
+        <>
+          {features.webaudio && (
+            <Webaudio style={{ position: 'absolute', right: '3.5rem', top: '0.3rem' }} />
+          )}
+          <ClientAudioCard />
+          <AudioCard className={`${classes.audioCard} step-settings-one`} />
+        </>
+      </SettingsAccordion>
+
+      {viewMode !== 'user' && (
+        <SettingsAccordion title="Features" accId="Features" icon="addTask">
+          <Uncategorized />
+        </SettingsAccordion>
+      )}
+      {features.scenemidi && (
+        <SettingsAccordion title="MIDI" accId="2b" icon="mdi:midi">
+          <MidiCard />
+        </SettingsAccordion>
+      )}
+      <Accordion
+        disabled
+        sx={{
+          backgroundColor: theme.palette.background.paper + ' !important',
+          mt: 2,
+          opacity: 0.9
+        }}
+      >
+        <AccordionSummary aria-controls="panel3a-content" id="panel3a-header">
+          <Typography>Tools</Typography>
+        </AccordionSummary>
+      </Accordion>
+      <Grid
+        container
+        sx={{
+          // Columns as wide as they need to be and no wider: tiles stretch to
+          // share the row instead of leaving the remainder as dead space at
+          // the right edge. Self-correcting at every width, so phones get two
+          // full-width columns and desktops as many as fit.
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(158px, 1fr))',
+          gap: 2,
+          m: 0,
+          backgroundColor: theme.palette.background.paper,
+          p: 2,
+          borderEndEndRadius: 1,
+          opacity: 0.9
+        }}
+      >
+        <Tile component={<AssetManager variant="tile" />} />
+        <Tile
+          icon={<People fontSize="large" />}
+          text="Client Manager"
+          onClick={() => setDialogOpenClientManagement(true)}
+        />
+        <Tile
+          icon={<QueueMusic fontSize="large" />}
+          text="Scene Playlists"
+          onClick={() => navigate('/playlists')}
+        />
+        {isCC && (
+          <Tile
+            client
+            beta
+            icon={<LibraryMusic fontSize="large" />}
+            text="Song Detector"
+            onClick={() => setSd(true)}
+          />
+        )}
+        {backendFeatures.sendspin && (
+          <Tile
+            beta
+            icon={<Cast fontSize="large" />}
+            text="Sendspin"
+            onClick={() => setDialogOpenSendspinManager(true)}
+            tooltip="Manage Sendspin servers (HA Music Assistant)"
+          />
+        )}
+        <Tile
+          beta
+          icon={<LibraryMusic fontSize="large" />}
+          text="Now Playing"
+          onClick={() => setSongDetectorScreenOpen(true)}
+          onContextMenu={(e) => {
+            e.preventDefault()
+            setSdPlus(true)
+          }}
+          tooltip={
+            <Stack spacing={0.5} alignItems="flex-start">
+              {NOW_PLAYING_FEATURES.map((f) => (
+                <Chip
+                  key={f}
+                  label={f}
+                  size="small"
+                  variant="outlined"
+                  sx={{ color: 'common.white', borderColor: 'rgba(255,255,255,0.35)' }}
+                />
+              ))}
+            </Stack>
+          }
+        />
+        <Tile
+          client
+          beta
+          icon={<AccountTree fontSize="large" />}
+          text="YZ Flow"
+          onClick={() => navigate('/YZflow')}
+        />
+        <Tile
+          client
+          beta
+          icon={<SportsEsports fontSize="large" />}
+          text="Gamepad"
+          onClick={() => setGamepadOpen(true)}
+        />
+        {features.scenemidi && (
+          <Tile
+            client
+            icon={<SettingsInputComponent fontSize="large" />}
+            text="MIDI"
+            onClick={() => setMidiOpen(true)}
+          />
+        )}
+        {!features.bgvisualiser && (
+          <Tile
+            client
+            beta
+            icon={<Equalizer fontSize="large" />}
+            text="Visualiser Playground"
+            onClick={() => navigate('/visualiser')}
+          />
+        )}
+      </Grid>
+      {viewMode !== 'user' && (
+        <SettingsAccordion
+          title="Bottom Bar Visibility"
+          accId="corebetaa"
+          icon="mdi:eye"
+          sx={{ opacity: 0.9 }}
+        >
+          <BottomBarCard />
+        </SettingsAccordion>
+      )}
+      <Accordion
+        disabled
+        sx={{
+          backgroundColor: theme.palette.background.paper + ' !important',
+          mt: 2,
+          opacity: 0.9
+        }}
+      >
+        <AccordionSummary aria-controls="panel3a-content" id="panel3a-header">
+          <Typography>Widgets</Typography>
+        </AccordionSummary>
+      </Accordion>
+      <Grid
+        container
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(158px, 1fr))',
+          gap: 2,
+          mb: 2,
+          backgroundColor: theme.palette.background.paper,
+          p: 2,
+          borderEndEndRadius: 1,
+          opacity: 0.9
+        }}
+      >
+        <Tile
+          icon={<Keyboard fontSize="large" />}
+          text="Keybindings"
+          onClick={() => setKeybinding(true)}
+        />
+        <Tile
+          icon={<Keyboard fontSize="large" />}
+          text="Smartbar"
+          onClick={() => setSmartBarOpen(true)}
+        />
+        <Tile
+          client
+          icon={<Keyboard fontSize="large" />}
+          text="Pixel Graphs"
+          onClick={() => setPgs(true)}
+        />
+      </Grid>
+
+      {viewMode !== 'user' && <SmartBar direct maxWidth={540} />}
+    </div>
+  )
+}
+
+export default SettingsNew

@@ -17,6 +17,7 @@ from ledfx.config import save_config
 from ledfx.effects import Effect
 from ledfx.effects.math import ExpFilter
 from ledfx.effects.melbank import FFT_SIZE, MIC_RATE, Melbanks
+from ledfx.effects.windows_loopback import WindowsLoopbackStream, loopback_devices
 from ledfx.events import AudioDeviceChangeEvent, AudioSourceErrorEvent, Event
 from ledfx.sendspin import SENDSPIN_AVAILABLE
 from ledfx.sendspin.config import is_always_on as is_sendspin_always_on
@@ -388,6 +389,8 @@ class AudioInputSource:
         apis = sd.query_hostapis() + ({"name": "WEB AUDIO"},)
         if SENDSPIN_AVAILABLE:
             apis = apis + ({"name": "SENDSPIN"},)
+        if loopback_devices():
+            apis = apis + ({"name": "Windows WASAPI Loopback"},)
         return apis
 
     @staticmethod
@@ -419,6 +422,22 @@ class AudioInputSource:
                 for name, config in SENDSPIN_SERVERS.items()
             )
             devices = devices + sendspin_devices
+        loopbacks = loopback_devices()
+        if loopbacks:
+            loopback_idx = next(
+                i for i, h in enumerate(hostapis)
+                if h["name"] == "Windows WASAPI Loopback"
+            )
+            devices = devices + tuple(
+                {
+                    "hostapi": loopback_idx,
+                    "name": mic.name,
+                    "max_input_channels": 2,
+                    "default_samplerate": 48000,
+                    "loopback_id": mic.id,
+                }
+                for mic in loopbacks
+            )
         return devices
 
     @staticmethod
@@ -845,6 +864,15 @@ class AudioInputSource:
                     AudioInputSource._stream
                 ) = WebAudioStream(
                     device["client"], self._audio_sample_callback
+                )
+            elif "loopback_id" in device:
+                AudioInputSource._stream = WindowsLoopbackStream(
+                    endpoint_id=device["loopback_id"],
+                    samplerate=device["default_samplerate"],
+                    frame_count=int(
+                        device["default_samplerate"] / self._config["sample_rate"]
+                    ),
+                    callback=self._audio_sample_callback,
                 )
             elif (
                 SENDSPIN_AVAILABLE

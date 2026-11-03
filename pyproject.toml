@@ -47,6 +47,7 @@ dependencies = [
     "winrt-Windows.Foundation>=2.0.0; sys_platform == \"win32\"",
     "winrt-Windows.Media.Control>=2.0.0; sys_platform == \"win32\"",
     "dbus-fast>=5.0.22,<6.0.0; sys_platform == \"linux\"",
+    "soundcard>=0.4.6; sys_platform == \"win32\"",
 ]
 name = "LedFx"
 version = "2.1.9"

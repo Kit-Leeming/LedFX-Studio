@@ -92,13 +92,26 @@ def build_drgbw_packet(data: np.ndarray, timeout: int):
 
     byteData = data.astype(np.dtype("B"))
     out = np.zeros((len(byteData), 4), dtype="B")
-    out[:, :3] = byteData
+    out[:, : byteData.shape[1]] = byteData
     # 4th column is unusued white channel -> 0
     packet.extend(out.flatten().tobytes())
 
     # for i in range(len(byteData)):
     #     packet.extend(byteData[i].flatten().tobytes())
     #     packet.extend(bytes(0))
+    return packet
+
+
+def build_dnrgbw_packet(
+    data: np.ndarray, timeout: int, led_start_index: np.uint16
+):
+    """WLED DNRGBW packet: type, timeout, 16-bit pixel offset, RGBW bytes."""
+    packet = bytearray(
+        [5, (timeout or 1), led_start_index >> 8, led_start_index & 0xFF]
+    )
+    if data.shape[1] == 3:
+        data = np.pad(data, ((0, 0), (0, 1)))
+    packet.extend(data.astype(np.uint8).ravel().tobytes())
     return packet
 
 

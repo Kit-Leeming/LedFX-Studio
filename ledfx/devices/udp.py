@@ -13,6 +13,7 @@ SUPPORTED_PACKETS = [
     "DRGB",
     "WARLS",
     "DRGBW",
+    "DNRGBW",
     "DNRGB",
     "adaptive_smallest",
     RGB_HYPERHDR_PACKET,
@@ -92,6 +93,13 @@ class UDPRealtimeDevice(UDPDevice):
         elif self._config["udp_packet_type"] == "DRGBW" and frame_size <= 367:
             udpData = packets.build_drgbw_packet(data, timeout)
             self.transmit_packet(udpData, frame_is_equal_to_last)
+
+        elif self._config["udp_packet_type"] in ("DRGBW", "DNRGBW"):
+            for start_index in range(0, frame_size, 364):
+                udpData = packets.build_dnrgbw_packet(
+                    data[start_index : start_index + 364], timeout, start_index
+                )
+                self.transmit_packet(udpData, frame_is_equal_to_last)
 
         elif self._config["udp_packet_type"] == "DNRGB":
             number_of_packets = int(np.ceil(frame_size / 489))

@@ -1,0 +1,2298 @@
+import { JSX } from 'react/jsx-runtime';
+import { PersistOptions } from 'zustand/middleware';
+import { StoreApi } from 'zustand';
+import { Theme } from '@mui/material';
+import { UseBoundStore } from 'zustand';
+
+/**
+ * All visualizers as flat array (for Autocomplete groupBy)
+ * Static const array - computed at build time
+ */
+export declare const ALL_VISUALIZERS: VisualizerOption[];
+
+/**
+ * All visualizers as flat array with category metadata
+ * Combines WebGL and schema-based visualizers
+ * Static const array - computed at module load time
+ * Use with Autocomplete's groupBy prop: groupBy={(option) => option.category}
+ */
+export declare const ALL_VISUALIZERS_WITH_CATEGORIES: Array<VisualizerOption | WebGLVisualizerOption>;
+
+/**
+ * All WebGL visualizers as flat array (for Autocomplete groupBy)
+ * Static const array - computed at build time
+ */
+export declare const ALL_WEBGL_VISUALIZERS: WebGLVisualizerOption[];
+
+declare interface ArrayProperty extends BaseProperty {
+    type: 'array'
+    items: SchemaProperty
+    minItems?: number
+    maxItems?: number
+}
+
+declare interface AstrofoxConfig {
+    layers: AstrofoxLayer[];
+    backgroundColor: string;
+    width: number;
+    height: number;
+    primaryColor?: string;
+    secondaryColor?: string;
+    tertiaryColor?: string;
+    gradient?: string;
+    gradient2?: string;
+    image_source?: string;
+    background_source?: string;
+}
+
+declare type AstrofoxLayer = BarSpectrumLayer | WaveSpectrumLayer | SoundWaveLayer | SoundWave2Layer | TextLayer | ImageLayer | Geometry3DLayer | GroupLayer | NeonTunnelLayer | ReactiveOrbLayer | ParticleFieldLayer;
+
+declare interface AstrofoxLayerBase {
+    id: string;
+    type: AstrofoxLayerType;
+    name: string;
+    visible: boolean;
+    opacity: number;
+    blendMode: BlendMode;
+    x: number;
+    y: number;
+    rotation: number;
+    scale: number;
+}
+
+declare type AstrofoxLayerType = 'barSpectrum' | 'waveSpectrum' | 'soundWave' | 'soundWave2' | 'text' | 'image' | 'geometry3d' | 'group' | 'neonTunnel' | 'reactiveOrb' | 'particleField';
+
+declare interface BadTVConfig {
+    distortion?: number;
+    distortion2?: number;
+    speed?: number;
+    rollSpeed?: number;
+    scanlineIntensity?: number;
+    scanlineCount?: number;
+    staticNoise?: number;
+    rgbSplit?: number;
+}
+
+declare interface BarSpectrumLayer extends AstrofoxLayerBase {
+    type: 'barSpectrum';
+    width: number;
+    height: number;
+    barWidth: number;
+    barSpacing: number;
+    barColor: string;
+    barColorEnd: string;
+    shadowHeight: number;
+    shadowColor: string;
+    minFrequency: number;
+    maxFrequency: number;
+    maxDecibels: number;
+    smoothing: number;
+    mirror: boolean;
+}
+
+declare interface BaseProperty {
+    type: SchemaPropertyType
+    title: string
+    description?: string
+    default: any
+    step?: number
+    ui?: UIOptions
+}
+
+/**
+ * Astrofox Layer Types
+ *
+ * Type definitions for all Astrofox layer types and configurations.
+ */
+declare const BLEND_MODES: readonly ["normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion"];
+
+declare type BlendMode = (typeof BLEND_MODES)[number];
+
+declare interface BloomConfig {
+    threshold?: number;
+    intensity?: number;
+    radius?: number;
+    blendMode?: 'add' | 'screen';
+}
+
+declare interface BooleanProperty extends BaseProperty {
+    type: 'boolean'
+}
+
+/**
+ * ButterchurnVisualiser - Milkdrop-style visualizations using Butterchurn
+ *
+ * This component renders Milkdrop presets with automatic cycling and audio reactivity.
+ * Based on https://butterchurnviz.com/ and https://github.com/jberg/butterchurn
+ */
+declare interface ButterchurnConfig {
+    currentPresetName?: string;
+    cycleInterval: number;
+    blendTime: number;
+    shufflePresets: boolean;
+    currentPresetIndex: number;
+    initialPresetName?: string;
+    initialPresetIndex?: number;
+}
+
+declare interface CustomAstrofoxPreset {
+    name: string;
+    layers: AstrofoxLayer[];
+    backgroundColor: string;
+}
+
+/**
+ * WebGL Visualizer Default Configurations (Auto-Generated from Backend)
+ *
+ * ⚠️ AUTO-GENERATED - DO NOT EDIT MANUALLY
+ * Generated from: https://github.com/LedFx/LedFx/tree/main/ledfx/effects
+ *
+ * Run `pnpm generate:backend` to regenerate.
+ */
+export declare const DEFAULT_CONFIGS: Record<string, any>;
+
+declare interface DotScreenConfig {
+    centerX?: number;
+    centerY?: number;
+    angle?: number;
+    scale?: number;
+    grayscale?: boolean;
+    cmyk?: boolean;
+}
+
+declare interface FilmGrainConfig {
+    intensity?: number;
+    grainSize?: number;
+    luminanceAffect?: number;
+    colored?: boolean;
+    speed?: number;
+}
+
+declare type FrequencyBand = 'bass' | 'mid' | 'high';
+
+declare interface Geometry3DLayer extends AstrofoxLayerBase {
+    type: 'geometry3d';
+    shape: GeometryShape;
+    material: GeometryMaterial;
+    shading: ShadingType;
+    color: string;
+    wireframe: boolean;
+    edges: boolean;
+    edgeColor: string;
+    rotationX: number;
+    rotationY: number;
+    rotationZ: number;
+    size: number;
+    audioReactive: boolean;
+}
+
+declare const GEOMETRY_MATERIALS: readonly ["Standard", "Basic", "Lambert", "Phong", "Normal"];
+
+declare const GEOMETRY_SHAPES: readonly ["Box", "Sphere", "Dodecahedron", "Icosahedron", "Octahedron", "Tetrahedron", "Torus", "Torus Knot"];
+
+declare type GeometryMaterial = (typeof GEOMETRY_MATERIALS)[number];
+
+declare type GeometryShape = (typeof GEOMETRY_SHAPES)[number];
+
+declare interface GlitchConfig {
+    amount?: number;
+    speed?: number;
+    seed?: number;
+}
+
+declare interface GodRaysConfig {
+    lightX?: number;
+    lightY?: number;
+    exposure?: number;
+    decay?: number;
+    density?: number;
+    weight?: number;
+    intensity?: number;
+    threshold?: number;
+    rayColor?: [number, number, number];
+    numSamples?: number;
+}
+
+declare interface GroupLayer extends AstrofoxLayerBase {
+    type: 'group';
+    mask: boolean;
+    childIds: string[];
+}
+
+declare interface ImageLayer extends AstrofoxLayerBase {
+    type: 'image';
+    imageUrl: string;
+    imageData: string;
+    width: number;
+    height: number;
+    naturalWidth: number;
+    naturalHeight: number;
+    fixed: boolean;
+    maintainAspectRatio: boolean;
+    audioReactive: boolean;
+    reactiveScale: number;
+}
+
+export declare type IStore = typeof state;
+
+declare interface KaleidoscopeConfig {
+    sides?: number;
+    angle?: number;
+    rotationSpeed?: number;
+    beatSync?: boolean;
+    beatAmount?: number;
+}
+
+declare interface LEDConfig {
+    spacing?: number;
+    size?: number;
+    blur?: number;
+    brightness?: number;
+    showGrid?: boolean;
+}
+
+declare interface MirrorConfig {
+    mode?: MirrorMode;
+    position?: number;
+    flip?: boolean;
+}
+
+declare type MirrorMode = 'horizontal' | 'vertical' | 'quadrant' | 'diagonal';
+
+declare interface NeonTunnelLayer extends AstrofoxLayerBase {
+    type: 'neonTunnel';
+    frequencyBands: FrequencyBand[];
+    audioSensitivity: number;
+    color: string;
+    wireframeThickness: number;
+    glowIntensity: number;
+    speed: number;
+    segments: number;
+    cameraShakeEnabled: boolean;
+    cameraShakeIntensity: number;
+    enableBloom: boolean;
+    bloomStrength: number;
+    enableRGBShift: boolean;
+    rgbShiftAmount: number;
+}
+
+declare interface NumberProperty extends BaseProperty {
+    type: 'number' | 'integer'
+    minimum?: number
+    maximum?: number
+    multipleOf?: number
+    step?: number
+}
+
+declare interface ObjectProperty extends BaseProperty {
+    type: 'object'
+    properties: Record<string, SchemaProperty>
+    required?: string[]
+}
+
+declare interface ParticleFieldLayer extends AstrofoxLayerBase {
+    type: 'particleField';
+    frequencyBands: FrequencyBand[];
+    audioSensitivity: number;
+    particleCount: number;
+    particleSize: number;
+    particleColor: string;
+    speed: number;
+    depth: number;
+    enableBloom: boolean;
+    bloomStrength: number;
+    enableRGBShift: boolean;
+    rgbShiftAmount: number;
+}
+
+declare interface PixelateConfig {
+    pixelSize?: number;
+    roundPixels?: boolean;
+}
+
+declare interface PostProcessingConfig {
+    bloom?: BloomConfig & {
+        enabled?: boolean;
+    };
+    kaleidoscope?: KaleidoscopeConfig & {
+        enabled?: boolean;
+    };
+    glitch?: GlitchConfig & {
+        enabled?: boolean;
+    };
+    rgbShift?: RGBShiftConfig & {
+        enabled?: boolean;
+    };
+    led?: LEDConfig & {
+        enabled?: boolean;
+    };
+    vignette?: VignetteConfig & {
+        enabled?: boolean;
+    };
+    filmGrain?: FilmGrainConfig & {
+        enabled?: boolean;
+    };
+    godRays?: GodRaysConfig & {
+        enabled?: boolean;
+    };
+    pixelate?: PixelateConfig & {
+        enabled?: boolean;
+    };
+    mirror?: MirrorConfig & {
+        enabled?: boolean;
+    };
+    dotScreen?: DotScreenConfig & {
+        enabled?: boolean;
+    };
+    badTV?: BadTVConfig & {
+        enabled?: boolean;
+    };
+}
+
+declare interface ReactiveOrbLayer extends AstrofoxLayerBase {
+    type: 'reactiveOrb';
+    frequencyBands: FrequencyBand[];
+    audioSensitivity: number;
+    color: string;
+    displacementAmount: number;
+    noiseScale: number;
+    subdivisions: number;
+    fresnelIntensity: number;
+    enableBloom: boolean;
+    bloomStrength: number;
+    enableRGBShift: boolean;
+    rgbShiftAmount: number;
+}
+
+/**
+ * AUTO-GENERATED - DO NOT EDIT
+ * Visualizer Registry
+ * Run: pnpm generate
+ */
+declare interface RegistryEntry<T = any> {
+    $id: string;
+    displayName: string;
+    configType: string;
+    defaultConfig: T;
+    getUISchema: (config?: Partial<T>) => any;
+    metadata: Record<string, any>;
+}
+
+declare interface RGBShiftConfig {
+    amount?: number;
+    angle?: number;
+    radial?: boolean;
+}
+
+declare type SchemaProperty = 
+| StringProperty 
+| NumberProperty 
+| BooleanProperty 
+| ArrayProperty 
+| ObjectProperty
+
+/**
+ * Base Schema Types
+ * 
+ * Foundation types for all visualizer schemas
+ */
+
+declare type SchemaPropertyType = 
+| 'string' 
+| 'number' 
+| 'integer' 
+| 'boolean' 
+| 'array' 
+| 'object'
+
+declare const SHADING_TYPES: readonly ["Smooth", "Flat"];
+
+declare type ShadingType = (typeof SHADING_TYPES)[number];
+
+declare interface SoundWave2Layer extends AstrofoxLayerBase {
+    type: 'soundWave2';
+    radius: number;
+    lineWidth: number;
+    lineColor: string;
+    mode: 'circle' | 'line';
+    sensitivity: number;
+}
+
+declare interface SoundWaveLayer extends AstrofoxLayerBase {
+    type: 'soundWave';
+    width: number;
+    height: number;
+    lineWidth: number;
+    color: string;
+    fillColor: string;
+    useFill: boolean;
+    wavelength: number;
+    smooth: number;
+}
+
+declare const state: Omit<{
+    version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+    showCode: boolean;
+    shaderCode: string;
+    activeCustomShader: undefined;
+    setShowCode: (show: boolean) => any;
+    toggleShaderEditor: () => any;
+    setShaderCode: (code: string) => any;
+    setActiveCustomShader: (shader: string | undefined) => any;
+    butterchurnConfig: ButterchurnConfig;
+    butterchurnPresetNames: never[];
+    astrofoxConfig: AstrofoxConfig;
+    customAstrofoxPresets: any;
+    visualizerConfigs: Record<string, any>;
+    astrofoxReady: boolean;
+    setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+    updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+    setButterchurnPresetNames: (names: string[]) => any;
+    setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+    updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+    saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+    deleteCustomAstrofoxPreset: (name: string) => void;
+    loadCustomAstrofoxPresets: () => void;
+    setVisualizerConfig: (id: string, config: any) => any;
+    updateVisualizerConfig: (id: string, partial: any) => any;
+    setAstrofoxReady: (ready: boolean) => any;
+    initializeConfigs: () => void;
+    fxEnabled: boolean;
+    ppConfig: PostProcessingConfig;
+    glContext: WebGLRenderingContext | null;
+    canvasSize: {
+        width: number;
+        height: number;
+    };
+    setFxEnabled: (enabled: boolean) => any;
+    toggleFx: () => any;
+    setPpConfig: (config: PostProcessingConfig) => any;
+    updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+    setGlContext: (context: WebGLRenderingContext | null) => any;
+    setCanvasSize: (size: {
+        width: number;
+        height: number;
+    }) => any;
+    showOverlays: boolean;
+    fullScreen: boolean;
+    showFxPanel: boolean;
+    saveError: null;
+    setShowOverlays: (show: boolean) => any;
+    toggleOverlays: () => any;
+    setFullScreen: (fullScreen: boolean) => any;
+    setShowFxPanel: (show: boolean) => any;
+    setSaveError: (error: string | null) => any;
+    visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+    visualType: VisualisationType;
+    audioSource: "backend" | "mic" | "system";
+    autoChange: boolean;
+    isPlaying: boolean;
+    globalSmoothing: number;
+    whiteCircleFix: "original" | "energy" | "clamp";
+    outerGlowMode: "original" | "strengthened";
+    textAutoFit: boolean;
+    setVisualType: (type: VisualisationType) => any;
+    setAudioSource: (source: "backend" | "mic" | "system") => any;
+    setAutoChange: (enabled: boolean) => any;
+    setIsPlaying: (playing: boolean) => any;
+    togglePlay: () => any;
+    setGlobalSmoothing: (value: number) => any;
+    setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+    setOuterGlowMode: (mode: "original" | "strengthened") => any;
+    setTextAutoFit: (enabled: boolean) => any;
+};
+
+export declare interface StoreConfigsActions {
+    setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => void;
+    updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => void;
+    setButterchurnPresetNames: (names: string[]) => void;
+    setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => void;
+    updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => void;
+    saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+    deleteCustomAstrofoxPreset: (name: string) => void;
+    loadCustomAstrofoxPresets: () => void;
+    setVisualizerConfig: (id: string, config: any) => void;
+    updateVisualizerConfig: (id: string, partial: any) => void;
+    setAstrofoxReady: (ready: boolean) => void;
+    initializeConfigs: () => void;
+}
+
+export declare interface StoreConfigsState {
+    butterchurnConfig: ButterchurnConfig;
+    butterchurnPresetNames: string[];
+    astrofoxConfig: AstrofoxConfig;
+    customAstrofoxPresets: CustomAstrofoxPreset[];
+    visualizerConfigs: Record<string, any>;
+    astrofoxReady: boolean;
+}
+
+export declare interface StorePostProcessingActions {
+    setFxEnabled: (enabled: boolean) => void;
+    toggleFx: () => void;
+    setPpConfig: (config: PostProcessingConfig) => void;
+    updatePpConfig: (partial: Partial<PostProcessingConfig>) => void;
+    setGlContext: (context: WebGLRenderingContext | null) => void;
+    setCanvasSize: (size: {
+        width: number;
+        height: number;
+    }) => void;
+}
+
+export declare interface StorePostProcessingState {
+    fxEnabled: boolean;
+    ppConfig: PostProcessingConfig;
+    glContext: WebGLRenderingContext | null;
+    canvasSize: {
+        width: number;
+        height: number;
+    };
+}
+
+export declare interface StoreShaderEditorActions {
+    setShowCode: (show: boolean) => void;
+    toggleShaderEditor: () => void;
+    setShaderCode: (code: string) => void;
+    setActiveCustomShader: (shader: string | undefined) => void;
+}
+
+export declare interface StoreShaderEditorState {
+    showCode: boolean;
+    shaderCode: string;
+    activeCustomShader: string | undefined;
+}
+
+export declare interface StoreUIActions {
+    setShowOverlays: (show: boolean) => void;
+    toggleOverlays: () => void;
+    setFullScreen: (fullScreen: boolean) => void;
+    setShowFxPanel: (show: boolean) => void;
+    setSaveError: (error: string | null) => void;
+}
+
+export declare interface StoreUIState {
+    showOverlays: boolean;
+    fullScreen: boolean;
+    showFxPanel: boolean;
+    saveError: string | null;
+}
+
+export declare interface StoreVisualizerActions {
+    setVisualType: (type: VisualisationType) => void;
+    setAudioSource: (source: 'backend' | 'mic' | 'system') => void;
+    setAutoChange: (enabled: boolean) => void;
+    setIsPlaying: (playing: boolean) => void;
+    togglePlay: () => void;
+    setGlobalSmoothing: (value: number) => void;
+    setWhiteCircleFix: (mode: 'original' | 'energy' | 'clamp') => void;
+    setOuterGlowMode: (mode: 'original' | 'strengthened') => void;
+    setTextAutoFit: (enabled: boolean) => void;
+}
+
+export declare interface StoreVisualizerState {
+    visualizers: VisualizerOption_2[];
+    visualType: VisualisationType;
+    audioSource: 'backend' | 'mic' | 'system';
+    autoChange: boolean;
+    isPlaying: boolean;
+    globalSmoothing: number;
+    whiteCircleFix: 'original' | 'energy' | 'clamp';
+    outerGlowMode: 'original' | 'strengthened';
+    textAutoFit: boolean;
+}
+
+declare interface StringProperty extends BaseProperty {
+    type: 'string'
+    format?: 'color' | 'url' | 'email'
+    isGradient?: boolean
+    enum?: string[]
+    minLength?: number
+    maxLength?: number
+    pattern?: string
+}
+
+declare interface TextLayer extends AstrofoxLayerBase {
+    type: 'text';
+    text: string;
+    font: string;
+    fontSize: number;
+    bold: boolean;
+    italic: boolean;
+    color: string;
+    textAlign: 'left' | 'center' | 'right';
+    audioReactive: boolean;
+    reactiveScale: number;
+}
+
+declare interface UIOptions {
+    order?: number
+    showIf?: Record<string, any>
+    hidden?: boolean
+    section?: string
+    width?: 'full' | 'half' | 'third'
+}
+
+export declare const useStore: UseBoundStore<Omit<Omit<StoreApi<Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}>, "setState" | "devtools"> & {
+setState(partial: (Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}) | Partial<Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}> | ((state: Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}) => (Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}) | Partial<Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}>), replace?: false | undefined, action?: (string | {
+[x: string]: unknown;
+[x: number]: unknown;
+[x: symbol]: unknown;
+type: string;
+}) | undefined): void;
+setState(state: (Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}) | ((state: Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}) => Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}), replace: true, action?: (string | {
+[x: string]: unknown;
+[x: number]: unknown;
+[x: symbol]: unknown;
+type: string;
+}) | undefined): void;
+devtools: {
+cleanup: () => void;
+};
+}, "setState" | "persist"> & {
+setState(partial: (Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}) | Partial<Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}> | ((state: Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}) => (Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}) | Partial<Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}>), replace?: false | undefined, action?: (string | {
+[x: string]: unknown;
+[x: number]: unknown;
+[x: symbol]: unknown;
+type: string;
+}) | undefined): unknown;
+setState(state: (Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}) | ((state: Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}) => Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}), replace: true, action?: (string | {
+[x: string]: unknown;
+[x: number]: unknown;
+[x: symbol]: unknown;
+type: string;
+}) | undefined): unknown;
+persist: {
+setOptions: (options: Partial<PersistOptions<Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}, any, unknown>>) => void;
+clearStorage: () => void;
+rehydrate: () => Promise<void> | void;
+hasHydrated: () => boolean;
+onHydrate: (fn: (state: Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}) => void) => () => void;
+onFinishHydration: (fn: (state: Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}) => void) => () => void;
+getOptions: () => Partial<PersistOptions<Omit<{
+version: number;
+}, "isPlaying" | "showCode" | "shaderCode" | "activeCustomShader" | "setShowCode" | "toggleShaderEditor" | "setShaderCode" | "setActiveCustomShader" | "butterchurnConfig" | "butterchurnPresetNames" | "astrofoxConfig" | "customAstrofoxPresets" | "visualizerConfigs" | "astrofoxReady" | "setButterchurnConfig" | "updateButterchurnConfig" | "setButterchurnPresetNames" | "setAstrofoxConfig" | "updateAstrofoxConfig" | "saveCustomAstrofoxPreset" | "deleteCustomAstrofoxPreset" | "loadCustomAstrofoxPresets" | "setVisualizerConfig" | "updateVisualizerConfig" | "setAstrofoxReady" | "initializeConfigs" | "fxEnabled" | "ppConfig" | "glContext" | "canvasSize" | "setFxEnabled" | "toggleFx" | "setPpConfig" | "updatePpConfig" | "setGlContext" | "setCanvasSize" | "showOverlays" | "fullScreen" | "showFxPanel" | "saveError" | "setShowOverlays" | "toggleOverlays" | "setFullScreen" | "setShowFxPanel" | "setSaveError" | "visualizers" | "visualType" | "audioSource" | "autoChange" | "globalSmoothing" | "whiteCircleFix" | "outerGlowMode" | "textAutoFit" | "setVisualType" | "setAudioSource" | "setAutoChange" | "setIsPlaying" | "togglePlay" | "setGlobalSmoothing" | "setWhiteCircleFix" | "setOuterGlowMode" | "setTextAutoFit"> & {
+showCode: boolean;
+shaderCode: string;
+activeCustomShader: undefined;
+setShowCode: (show: boolean) => any;
+toggleShaderEditor: () => any;
+setShaderCode: (code: string) => any;
+setActiveCustomShader: (shader: string | undefined) => any;
+butterchurnConfig: ButterchurnConfig;
+butterchurnPresetNames: never[];
+astrofoxConfig: AstrofoxConfig;
+customAstrofoxPresets: any;
+visualizerConfigs: Record<string, any>;
+astrofoxReady: boolean;
+setButterchurnConfig: (config: ButterchurnConfig | ((prev: ButterchurnConfig) => ButterchurnConfig)) => any;
+updateButterchurnConfig: (partial: Partial<ButterchurnConfig>) => any;
+setButterchurnPresetNames: (names: string[]) => any;
+setAstrofoxConfig: (config: AstrofoxConfig | ((prev: AstrofoxConfig) => AstrofoxConfig)) => any;
+updateAstrofoxConfig: (partial: Partial<AstrofoxConfig>) => any;
+saveCustomAstrofoxPreset: (name: string, layers: AstrofoxLayer[], backgroundColor: string) => void;
+deleteCustomAstrofoxPreset: (name: string) => void;
+loadCustomAstrofoxPresets: () => void;
+setVisualizerConfig: (id: string, config: any) => any;
+updateVisualizerConfig: (id: string, partial: any) => any;
+setAstrofoxReady: (ready: boolean) => any;
+initializeConfigs: () => void;
+fxEnabled: boolean;
+ppConfig: PostProcessingConfig;
+glContext: WebGLRenderingContext | null;
+canvasSize: {
+width: number;
+height: number;
+};
+setFxEnabled: (enabled: boolean) => any;
+toggleFx: () => any;
+setPpConfig: (config: PostProcessingConfig) => any;
+updatePpConfig: (partial: Partial<PostProcessingConfig>) => any;
+setGlContext: (context: WebGLRenderingContext | null) => any;
+setCanvasSize: (size: {
+width: number;
+height: number;
+}) => any;
+showOverlays: boolean;
+fullScreen: boolean;
+showFxPanel: boolean;
+saveError: null;
+setShowOverlays: (show: boolean) => any;
+toggleOverlays: () => any;
+setFullScreen: (fullScreen: boolean) => any;
+setShowFxPanel: (show: boolean) => any;
+setSaveError: (error: string | null) => any;
+visualizers: (VisualizerOption | WebGLVisualizerOption)[];
+visualType: VisualisationType;
+audioSource: "backend" | "mic" | "system";
+autoChange: boolean;
+isPlaying: boolean;
+globalSmoothing: number;
+whiteCircleFix: "original" | "energy" | "clamp";
+outerGlowMode: "original" | "strengthened";
+textAutoFit: boolean;
+setVisualType: (type: VisualisationType) => any;
+setAudioSource: (source: "backend" | "mic" | "system") => any;
+setAutoChange: (enabled: boolean) => any;
+setIsPlaying: (playing: boolean) => any;
+togglePlay: () => any;
+setGlobalSmoothing: (value: number) => any;
+setWhiteCircleFix: (mode: "original" | "energy" | "clamp") => any;
+setOuterGlowMode: (mode: "original" | "strengthened") => any;
+setTextAutoFit: (enabled: boolean) => any;
+}, any, unknown>>;
+};
+}>;
+
+declare interface VignetteConfig {
+    radius?: number;
+    softness?: number;
+    intensity?: number;
+    color?: [number, number, number];
+    centerX?: number;
+    centerY?: number;
+}
+
+/**
+ * WebGL to Backend Effect Mapping (Auto-Generated)
+ *
+ * ⚠️ AUTO-GENERATED - DO NOT EDIT MANUALLY
+ * Generated from: https://github.com/LedFx/LedFx/tree/main/ledfx/effects
+ *
+ * Run `pnpm generate:backend` to regenerate.
+ */
+export declare const VISUAL_TO_BACKEND_EFFECT: Record<string, string>;
+
+declare type VisualisationType = WebGLVisualisationType | Extract<keyof typeof VISUALIZER_REGISTRY, string>;
+
+export declare const VISUALISER_SCHEMAS: Record<string, VisualizerSchema>;
+
+declare const VisualiserIso: {
+    (props: VisualiserIsoProps): JSX.Element;
+    displayName: string;
+};
+export { VisualiserIso as AudioVisualiser }
+export { VisualiserIso }
+export default VisualiserIso;
+
+declare interface VisualiserIsoProps {
+    theme: Theme;
+    effects?: any;
+    backendAudioData?: number[];
+    ConfigFormComponent?: React.ComponentType<any>;
+    configData?: any;
+    storageName?: string;
+    onClose?: () => void;
+}
+
+/**
+ * Public API exposed via window.visualiserApi for imperative control
+ * Methods that require component internals (refs, fullscreen handle) or static registry data
+ *
+ * Note: Most state/actions are now available via window.YzAudioVisualiser.useStore
+ * This API is kept minimal for methods that need internal component access
+ */
+export declare interface VisualiserWindowApi {
+    loadPreset: (index: number) => void;
+    loadPresetByName: (name: string) => void;
+    getCurrentPreset: () => {
+        name: string;
+        index: number;
+    };
+    getPresetNames: () => string[];
+    toggleFullscreen: () => void;
+    getVisualizerIds: () => string[];
+    getVisualizerMetadata: (id: string) => any;
+    getVisualizerRegistry: () => any;
+}
+
+declare const VISUALIZER_REGISTRY: VisualizerRegistry;
+
+/**
+ * Visualizer option for Autocomplete with category metadata
+ */
+declare interface VisualizerOption {
+    id: string;
+    displayName: string;
+    category: string;
+}
+
+declare interface VisualizerOption_2 {
+    id: string;
+    displayName: string;
+    category: string;
+}
+
+declare interface VisualizerRegistry {
+    [key: string]: RegistryEntry;
+}
+
+declare interface VisualizerSchema {
+    $id: string
+    displayName: string
+    type: 'object'
+    properties: Record<string, SchemaProperty>
+    required?: string[]
+    metadata?: {
+        category?: string
+        tags?: string[]
+        author?: string
+        version?: string
+        description?: string
+    }
+}
+
+declare interface WaveSpectrumLayer extends AstrofoxLayerBase {
+    type: 'waveSpectrum';
+    width: number;
+    height: number;
+    lineWidth: number;
+    lineColor: string;
+    fill: boolean;
+    fillColor: string;
+    minFrequency: number;
+    maxFrequency: number;
+    smoothing: number;
+}
+
+export declare type WebGLVisualisationType = WebGLVisualiserId;
+
+/**
+ * AUTO-GENERATED - DO NOT EDIT
+ * Run: pnpm generate:webgl
+ */
+/**
+ * WebGL Visualizer Type
+ * All available frontend-only GLSL shader visualizers
+ */
+declare type WebGLVisualiserId = 'gif' | 'matrix' | 'terrain' | 'geometric' | 'concentric' | 'particles' | 'bars3d' | 'radial3d' | 'waveform3d' | 'bleep' | 'bands' | 'bandsmatrix' | 'blocks' | 'equalizer2d' | 'blender' | 'clone' | 'digitalrain' | 'flame' | 'gameoflife' | 'image' | 'keybeat2d' | 'noise2d' | 'plasma2d' | 'plasmawled2d' | 'radial' | 'soap' | 'texter' | 'bladeTexter' | 'waterfall';
+
+/**
+ * WebGL Visualizer option for Autocomplete with category metadata
+ */
+declare interface WebGLVisualizerOption {
+    id: string;
+    displayName: string;
+    category: string;
+}
+
+export { }

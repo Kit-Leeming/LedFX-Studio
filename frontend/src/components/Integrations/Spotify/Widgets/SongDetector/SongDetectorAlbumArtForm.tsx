@@ -1,0 +1,243 @@
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Slider,
+  Stack,
+  Switch,
+  Typography
+} from '@mui/material'
+import { ExpandMore } from '@mui/icons-material'
+import GradientPicker from '../../../../SchemaForm/components/GradientPicker/GradientPicker'
+import useStore from '../../../../../store/useStore'
+import useEngineRow from '../../../../../hooks/useEngineRow'
+import BladeFrame from '../../../../SchemaForm/components/BladeFrame'
+import VisualiserGradientImageSelectors from './VisualiserGradientImageSelectors'
+import CoreSectionConfig from './CoreSectionConfig'
+import VirtualGradientImageSelectors from './VirtualGradientImageSelectors'
+
+const SongDetectorAlbumArtForm = ({ preview = true }: { preview?: boolean }) => {
+  const thumbnailPath = useStore((state) => state.thumbnailPath)
+
+  // Use global state for gradient and image auto-apply
+  const selectedGradient = useStore((state) => state.selectedGradient)
+  const gradients = useStore((state) => state.gradients)
+  const extractedColors = useStore((state) => state.extractedColors)
+  const imageConfigGlobal = useStore((state) => state.imageConfig)
+
+  const setSelectedGradient = useStore((state) => state.setSelectedGradient)
+  const setImageConfig = useStore((state) => state.setImageConfig)
+
+  const gradientIsCore = useEngineRow('gradient').isCore
+  const imageIsCore = useEngineRow('image').isCore
+
+  // Use global state directly
+  const imageConfig = imageConfigGlobal
+  const albumArtCacheBuster = useStore((state) => state.albumArtCacheBuster)
+
+  // Compute album art URL using backend API endpoint
+  const albumArtUrl = thumbnailPath
+    ? `${window.localStorage.getItem('ledfx-host')}/api/assets/download?path=${thumbnailPath.replace('/assets/', '')}&cb=${albumArtCacheBuster}`
+    : ''
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Flush on phones, matching the text column. The spacing exists to keep
+          the two columns' selectors bottom-aligned side by side, which stops
+          meaning anything once they are stacked. */}
+      <Stack direction="column" spacing={{ xs: 0, sm: 2 }} sx={{ flex: 1, display: 'flex' }}>
+        {/* Album Art Thumbnail */}
+        {albumArtUrl && preview && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              mb: 2
+            }}
+          >
+            <Box
+              component="img"
+              src={albumArtUrl}
+              alt="Album Art"
+              sx={{
+                maxWidth: 200,
+                maxHeight: 200,
+                borderRadius: 2,
+                boxShadow: 3
+              }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
+            />
+          </Box>
+        )}
+
+        {/* Gradient Preview and Selection */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMore />}>
+            <Typography>Album Art Configuration</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack direction="column" spacing={2}>
+              {/* Core-owned rows extract and apply on the core, so their
+                  browser-side settings are replaced by the core's own. */}
+              {gradientIsCore && <CoreSectionConfig section="gradient" />}
+              {imageIsCore && <CoreSectionConfig section="image" />}
+              {!gradientIsCore && gradients.length > 0 && (
+                <BladeFrame title="Gradient Options">
+                  <Stack direction="row" flexWrap="wrap" gap={1} sx={{ width: '100%' }}>
+                    {gradients.map((gradient, idx) => (
+                      <Box
+                        key={idx}
+                        onClick={() => setSelectedGradient(idx)}
+                        sx={{
+                          flex: 1,
+                          minWidth: 60,
+                          height: 40,
+                          background: gradient,
+                          borderRadius: 1,
+                          cursor: 'pointer',
+                          border: selectedGradient === idx ? '3px solid white' : '1px solid gray',
+                          transition: 'border 0.2s'
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                </BladeFrame>
+              )}
+
+              {/* Color Palette Display */}
+              {!gradientIsCore && extractedColors.length > 0 && (
+                <BladeFrame title="Extracted Colors">
+                  <Stack direction="row" flexWrap="wrap" gap={1} sx={{ width: '100%' }}>
+                    {extractedColors.map((color: string, idx: number) => (
+                      <Box
+                        key={idx}
+                        sx={{
+                          flex: 1,
+                          minWidth: 40,
+                          height: 40,
+                          backgroundColor: color,
+                          borderRadius: 1,
+                          border: '1px solid gray'
+                        }}
+                        title={color}
+                      />
+                    ))}
+                  </Stack>
+                </BladeFrame>
+              )}
+
+              {/* Image Effect Configuration */}
+              {!imageIsCore && (
+                <BladeFrame title="Image Effect Settings">
+                  <Stack direction="column" spacing={2} flex={1} pt={2}>
+                    <Stack direction="row" spacing={1} sx={{ flex: 1 }}>
+                      <BladeFrame title="Brightness" style={{ flex: 1 }}>
+                        <Slider
+                          min={0}
+                          max={1}
+                          step={0.01}
+                          valueLabelDisplay="auto"
+                          value={imageConfig.brightness}
+                          onChange={(_e, v) =>
+                            typeof v === 'number' &&
+                            setImageConfig({ ...imageConfig, brightness: v })
+                          }
+                        />
+                      </BladeFrame>
+                      <BladeFrame title="BG Brightness" style={{ flex: 1 }}>
+                        <Slider
+                          min={0}
+                          max={1}
+                          step={0.01}
+                          valueLabelDisplay="auto"
+                          value={imageConfig.background_brightness}
+                          onChange={(_e, v) =>
+                            typeof v === 'number' &&
+                            setImageConfig({ ...imageConfig, background_brightness: v })
+                          }
+                        />
+                      </BladeFrame>
+                    </Stack>
+
+                    <Stack direction="row" spacing={1} sx={{ flex: 1 }}>
+                      <BladeFrame title="Blur" style={{ flex: 1 }}>
+                        <Slider
+                          min={0}
+                          max={10}
+                          step={0.1}
+                          valueLabelDisplay="auto"
+                          value={imageConfig.blur}
+                          onChange={(_e, v) =>
+                            typeof v === 'number' && setImageConfig({ ...imageConfig, blur: v })
+                          }
+                        />
+                      </BladeFrame>
+                      <BladeFrame title="Min Size" style={{ flex: 1 }}>
+                        <Slider
+                          min={1}
+                          max={100}
+                          step={1}
+                          valueLabelDisplay="auto"
+                          value={imageConfig.min_size}
+                          onChange={(_e, v) =>
+                            typeof v === 'number' && setImageConfig({ ...imageConfig, min_size: v })
+                          }
+                        />
+                      </BladeFrame>
+                    </Stack>
+
+                    <GradientPicker
+                      isGradient={false}
+                      colors={extractedColors}
+                      title="BG Color"
+                      pickerBgColor={imageConfig.background_color}
+                      sendColorToVirtuals={(v: string) =>
+                        setImageConfig({ ...imageConfig, background_color: v })
+                      }
+                    />
+
+                    <Stack direction="row" spacing={1} sx={{ flex: 1 }}>
+                      <BladeFrame style={{ flex: 1 }} title="Clip">
+                        <Switch
+                          checked={imageConfig.clip}
+                          onChange={(_e, b) => setImageConfig({ ...imageConfig, clip: b })}
+                          color="primary"
+                        />
+                      </BladeFrame>
+                      <BladeFrame style={{ flex: 1 }} title="Flip H">
+                        <Switch
+                          checked={imageConfig.flip_horizontal}
+                          onChange={(_e, b) =>
+                            setImageConfig({ ...imageConfig, flip_horizontal: b })
+                          }
+                          color="primary"
+                        />
+                      </BladeFrame>
+                      <BladeFrame style={{ flex: 1 }} title="Flip V">
+                        <Switch
+                          checked={imageConfig.flip_vertical}
+                          onChange={(_e, b) => setImageConfig({ ...imageConfig, flip_vertical: b })}
+                          color="primary"
+                        />
+                      </BladeFrame>
+                    </Stack>
+                  </Stack>
+                </BladeFrame>
+              )}
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Virtual Device Selectors */}
+        <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }} />
+        <VirtualGradientImageSelectors />
+        <VisualiserGradientImageSelectors />
+      </Stack>
+    </Box>
+  )
+}
+
+export default SongDetectorAlbumArtForm

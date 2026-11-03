@@ -1,4 +1,7 @@
 hiddenimports = [
+    "ledfx.api.studio",
+    "ledfx.studio",
+    "ledfx.effects.beat_scan",
     "sacn",
     "rtmidi.midiutil",
     "paho",
@@ -54,4 +57,11 @@ hiddenimports = [
     "lifx.network",
     "lifx.protocol",
     "lifx.protocol.packets",
+    "ledfx.effects.wash_family",
+    "ledfx.effects.wash_frequency_color",
+    "ledfx.effects.wash_band_conversation",
+    "ledfx.effects.wash_peak_ripple",
+    "ledfx.effects.wash_color_memory",
+    "ledfx.effects.wash_sonic_stream",
+    "ledfx.effects.wash_twinklecat",
 ]

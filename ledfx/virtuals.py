@@ -793,7 +793,7 @@ class Virtual:
 
         self._ledfx.events.fire_event(
             VirtualUpdateEvent(
-                self.id, self._effective_to_physical_pixels(frame)
+                self.id, self._effective_to_physical_pixels(frame[:, :3])
             )
         )
 
@@ -909,6 +909,16 @@ class Virtual:
                         self._config["center_offset"],
                         axis=0,
                     )
+
+                # Only RGBW effects add a fourth channel. Pad the other side
+                # for ordinary transitions without changing RGB-only frames.
+                if frame.shape[1] != transition_frame.shape[1]:
+                    if frame.shape[1] == 3:
+                        frame = np.pad(frame, ((0, 0), (0, 1)))
+                    else:
+                        transition_frame = np.pad(
+                            transition_frame, ((0, 0), (0, 1))
+                        )
 
                 # Blend both frames together
                 self.transition_frame_counter += 1

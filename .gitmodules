@@ -1,3 +1,1 @@
-[submodule "frontend"]
-	path = frontend
-	url = https://github.com/YeonV/LedFx-Frontend-v2.git
+# Frontend is vendored in this fork; see THIRD_PARTY_NOTICES.md.

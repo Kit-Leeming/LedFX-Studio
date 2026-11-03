@@ -152,6 +152,15 @@ def convertToJsonSchema(schema):
 
     elif (
         callable(schema)
+        and getattr(schema, "__name__", None) == "validate_steps"
+    ):
+        return {
+            "type": "string",
+            "pattern": "^[01]{4}$|^[01]{8}$|^[01]{12}$|^[01]{16}$",
+        }
+
+    elif (
+        callable(schema)
         and getattr(schema, "__name__", None) == "virtual_id_validator"
     ):
         return {
