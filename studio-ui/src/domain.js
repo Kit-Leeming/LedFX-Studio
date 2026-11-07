@@ -133,6 +133,57 @@ export function placementError(w, l, p) {
       return "The light would extend beyond the stage. Adjust its position or increase the stage dimensions.";
   return "";
 }
+export function initialPlacement(w, l) {
+  const base = {
+    lightId: l.id,
+    x: 0.25,
+    y: 0.5,
+    rotation: 0,
+    bend: 0,
+    locked: false,
+  };
+  const extent = (light, p) => {
+    const pts = footprint(light, p),
+      xs = pts.filter((_, i) => i % 2 === 0),
+      ys = pts.filter((_, i) => i % 2 === 1);
+    return {
+      left: p.x + Math.min(...xs),
+      right: p.x + Math.max(...xs),
+      top: p.y + Math.min(...ys),
+      bottom: p.y + Math.max(...ys),
+    };
+  };
+  const occupied = w.placements.map((p) =>
+    extent(
+      w.lights.find((x) => x.id === p.lightId),
+      p,
+    ),
+  );
+  const candidates = [
+    [0.25, 0.5],
+    [0, 0],
+    ...occupied.flatMap((b) => [
+      [b.right + 0.25, b.top],
+      [b.left, b.bottom + 0.25],
+    ]),
+  ]
+    .map(([x, y]) => ({ ...base, x, y }))
+    .filter((p) => !placementError(w, l, p));
+  return (
+    candidates.find((p) => {
+      const b = extent(l, p);
+      return !occupied.some(
+        (o) =>
+          b.left < o.right + 0.1 &&
+          b.right > o.left - 0.1 &&
+          b.top < o.bottom + 0.1 &&
+          b.bottom > o.top - 0.1,
+      );
+    }) ||
+    candidates[0] ||
+    base
+  );
+}
 export function removeLight(w, id) {
   return {
     ...w,

@@ -2,7 +2,12 @@ import React, { useRef, useEffect, useState } from "react";
 import { Stage, Layer, Group, Line, Rect, Text, Circle } from "react-konva";
 import { Plus, Minus, Maximize, Lock, Unlock } from "lucide-react";
 import { Field, Modal, ErrorBox, Empty } from "./components";
-import { stripPoints, placementError, validateWorkspace } from "./domain";
+import {
+  stripPoints,
+  placementError,
+  validateWorkspace,
+  initialPlacement,
+} from "./domain";
 export function Canvas({
   workspace: w,
   selected,
@@ -95,7 +100,12 @@ export function Canvas({
               setPan({ x: e.target.x(), y: e.target.y() });
           }}
         >
-          <Layer x={margin} y={margin} scaleX={scale} scaleY={scale}>
+          <Layer
+            x={Math.max(margin, (width - w.stage.width * base) / 2)}
+            y={margin}
+            scaleX={scale}
+            scaleY={scale}
+          >
             <Rect
               x={0}
               y={0}
@@ -469,14 +479,7 @@ export default function StageView({
                 e.preventDefault();
                 const l = w.lights.find((l) => l.id === placeId);
                 if (!l) return;
-                const p = {
-                  lightId: l.id,
-                  x: 0.25,
-                  y: 0.5,
-                  rotation: 0,
-                  bend: 0,
-                  locked: false,
-                };
+                const p = initialPlacement(w, l);
                 const err = placementError(w, l, p);
                 if (err) {
                   setError(err);

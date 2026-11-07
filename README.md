@@ -8,9 +8,9 @@ audio-reactive effects, Windows playback capture, and a portable app launcher.
 The upstream LedFx engine and its contributors provide the foundation; the
 custom additions described below are the focus of this repository.
 
-![LedFX Studio with three simulated strips and two colour themes](docs/images/studio-demo.png)
+![LedFX Studio's measured stage with strips, a matrix and a wash](docs/images/studio-workspace.png)
 
-*Screenshot uses dummy devices. It contains no personal controller configuration.*
+*Screenshot uses dummy outputs in an isolated LedFX instance.*
 
 ## Why I built this
 
@@ -24,7 +24,7 @@ once, save colour arrangements independently, and pair either in named scenes.
 | Feature | What it does | Source |
 | --- | --- | --- |
 | Studio | Named devices, physical patch records, a measured stage and bulk effect/palette control | [UI source](studio-ui/), [state/transactions](ledfx/studio.py), [API](ledfx/api/studio.py) |
-| Independent colour arrangements | Gradients with representative swatches, per-effect mapping, reusable roles and per-light overrides | [Studio guide](STUDIO.md) |
+| Global and local palettes | Gradients with representative colours, global defaults and per-light overrides | [Studio guide](STUDIO.md) |
 | Beat Scan | Each detected beat launches a new strip segment while earlier segments keep moving; speed follows audio energy | [Effect](ledfx/effects/beat_scan.py), [guide](BEAT_SCAN.md) |
 | Wash effects | Six effects adapted for arrays of wash fixtures: Frequency Color, Band Conversation, Peak Ripple, Color Memory, Sonic Stream and Twinklecat | [Guide and design references](WASH_EFFECTS.md) |
 | Windows playback capture | WASAPI loopback sources for playback devices, including Bluetooth headphones | [Adapter](ledfx/effects/windows_loopback.py) |

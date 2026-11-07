@@ -505,6 +505,8 @@ summary {
   cursor: grab;
 }
 .compactList {
+  max-height: 225px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -525,6 +527,9 @@ summary {
 }
 .positionPanel form > h2 {
   margin-top: 24px;
+}
+.positionPanel .field {
+  margin: 10px 0;
 }
 .positionPanel form > p {
   font-size: 12px;
