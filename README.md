@@ -23,7 +23,7 @@ once, save colour arrangements independently, and pair either in named scenes.
 
 | Feature | What it does | Source |
 | --- | --- | --- |
-| Studio | Rig/group selection, light cards, shared settings, live bulk editing and Undo | [UI](frontend/public/studio/), [state/transactions](ledfx/studio.py), [API](ledfx/api/studio.py) |
+| Studio | Named devices, physical patch records, a measured stage and bulk effect/palette control | [UI source](studio-ui/), [state/transactions](ledfx/studio.py), [API](ledfx/api/studio.py) |
 | Independent colour arrangements | Gradients with representative swatches, per-effect mapping, reusable roles and per-light overrides | [Studio guide](STUDIO.md) |
 | Beat Scan | Each detected beat launches a new strip segment while earlier segments keep moving; speed follows audio energy | [Effect](ledfx/effects/beat_scan.py), [guide](BEAT_SCAN.md) |
 | Wash effects | Six effects adapted for arrays of wash fixtures: Frequency Color, Band Conversation, Peak Ripple, Color Memory, Sonic Stream and Twinklecat | [Guide and design references](WASH_EFFECTS.md) |
@@ -37,11 +37,9 @@ Studio rejects overlapping virtuals instead of silently switching other outputs 
 
 ## Status
 
-A separate [Phase 1 redesign prototype](docs/studio-next/README.md) explores a
-front-facing stage editor, controller patching and reusable fixture profiles.
-It runs with simulated hardware and does not replace the installed Studio.
-The review includes navigation alternatives, proposed data contracts and a
-prioritised production plan.
+Studio now uses four workspaces: **Devices, Patches, Stage, and Effects & palettes**.
+The editor runs on the existing LedFX backend at `/studio/index.html`. See the
+[Studio guide](STUDIO.md) for setup and the current hardware-control boundary.
 
 This fork includes upstream LedFx **2.2.1**, the latest non-prerelease release
 verified on **3 November 2026** (tag `v2.2.1`, commit

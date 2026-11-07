@@ -1,18 +1,17 @@
 {
-  "name": "ledfx-studio-prototype",
+  "name": "ledfx-studio-ui",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
+    "build": "vite build && node build.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --test tests/*.test.js",
     "test:e2e": "playwright test",
     "format": "prettier --write src tests e2e *.js *.json index.html"
   },
   "dependencies": {
-    "@xyflow/react": "^12.8.4",
     "konva": "^10.0.0",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",

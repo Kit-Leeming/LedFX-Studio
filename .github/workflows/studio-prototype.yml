@@ -1,26 +1,26 @@
-name: Studio prototype
+name: Studio workspace
 on:
   pull_request:
-    paths: ['studio-next/**', '.github/workflows/studio-prototype.yml']
+    paths: ['studio-ui/**', '.github/workflows/studio-prototype.yml']
   push:
     branches: ['main', 'codex/studio-ux-prototype']
-    paths: ['studio-next/**', '.github/workflows/studio-prototype.yml']
+    paths: ['studio-ui/**', '.github/workflows/studio-prototype.yml']
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  simulated-workflows:
+  studio-workflows:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: studio-next
+        working-directory: studio-ui
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: studio-next/package-lock.json
+          cache-dependency-path: studio-ui/package-lock.json
       - run: npm ci
       - run: npm test
       - run: npm run build

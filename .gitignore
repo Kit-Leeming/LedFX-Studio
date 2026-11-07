@@ -26,7 +26,7 @@ portable-data/
 node_modules/
 npm-debug.log
 package-lock.json
-!/studio-next/package-lock.json
+!/studio-ui/package-lock.json
 
 # Project files
 .ropeproject

@@ -1,111 +1,20 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>LedFX Studio</title>
+    <meta name="theme-color" content="#101417" />
+    <title>LedFX Studio · Design prototype</title>
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2032%2032%22%3E%3Ccircle%20cx=%2216%22%20cy=%2216%22%20r=%2212%22%20fill=%22%23aa9cff%22/%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='10' fill='%2379f2c0'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="studio.css" />
+    <script type="module" crossorigin src="./assets/index-Bxebca0w.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/vendor-DNUNBvrM.js">
+    <link rel="modulepreload" crossorigin href="./assets/stage-canvas-C7zqukwS.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-Ck7mcw9Y.css">
   </head>
   <body>
-    <header>
-      <div>
-        <span class="logo">◈</span><strong>LedFX Studio</strong
-        ><span class="muted"> Your lights, together.</span>
-      </div>
-      <div>
-        <a href="/" target="_blank" rel="noopener">Classic LedFX ↗</a
-        ><button id="undo" disabled>↶ Undo</button
-        ><button id="refresh">Refresh</button>
-      </div>
-    </header>
-    <div id="notice" role="status" aria-live="polite">Connecting…</div>
-    <main>
-      <aside class="rigs">
-        <h2>Rigs</h2>
-        <button id="allRig">All lights</button>
-        <div id="rigList"></div>
-        <button id="saveRig">＋ Save selection as rig</button>
-        <div id="rigTools"></div>
-        <h2>Groups / roles</h2>
-        <div id="groupList"></div>
-        <button id="addGroup">＋ Group selected lights</button>
-        <p class="hint">
-          Rigs choose what you see. Lights outside the rig keep running.
-        </p>
-      </aside>
-      <section class="lights">
-        <div class="sectionHead">
-          <div>
-            <h1 id="rigTitle">All lights</h1>
-            <p id="selectionCount" class="muted"></p>
-          </div>
-          <div>
-            <button id="selectAll">Select all</button
-            ><button id="selectNone">Clear selection</button>
-          </div>
-        </div>
-        <label class="search"
-          >Find a light
-          <input id="search" type="search" placeholder="Name or controller"
-        /></label>
-        <div id="cards" class="cards"></div>
-      </section>
-      <aside class="inspector">
-        <nav>
-          <button data-tab="effects" class="active">Effects</button
-          ><button data-tab="colours">Colours</button
-          ><button data-tab="presets">Presets</button>
-        </nav>
-        <div id="panel"></div>
-      </aside>
-    </main>
-    <dialog id="themeDialog">
-      <form id="themeForm">
-        <h2 id="themeHeading">Colour theme</h2>
-        <label>Name<input id="themeName" required maxlength="100" /></label
-        ><label
-          >Start from a gradient<select id="gradientSource"></select
-        ></label>
-        <div id="stops"></div>
-        <button id="addStop" type="button">＋ Colour stop</button>
-        <div id="gradientPreview" class="gradient"></div>
-        <details>
-          <summary>Paste a LedFX gradient</summary>
-          <label
-            >Gradient<input
-              id="gradientText"
-              placeholder="linear-gradient(90deg, #ff0044 0%, #0022ff 100%)" /></label
-          ><button type="button" id="importGradient">Import</button>
-        </details>
-        <div class="swatches">
-          <label>Primary<input id="primary" type="color" /></label
-          ><label>Accent<input id="accent" type="color" /></label
-          ><label
-            >Background<input id="background" type="color" value="#000000"
-          /></label>
-        </div>
-        <button id="suggest" type="button">
-          Suggest swatches from gradient
-        </button>
-        <details>
-          <summary>Per-effect colour mapping</summary>
-          <label>Effect<select id="mappingEffect"></select></label>
-          <div id="mappingFields"></div>
-        </details>
-        <p class="hint">
-          Brightness stays with effects. Backgrounds start black.
-        </p>
-        <div class="dialogActions">
-          <button id="cancelTheme" type="button">Cancel</button
-          ><button class="primary" type="submit">Save theme</button>
-        </div>
-        <p id="themeError" role="alert"></p>
-      </form>
-    </dialog>
-    <script type="module" src="studio.js"></script>
+    <div id="root"></div>
   </body>
 </html>
