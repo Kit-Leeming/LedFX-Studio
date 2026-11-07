@@ -37,6 +37,12 @@ Studio rejects overlapping virtuals instead of silently switching other outputs 
 
 ## Status
 
+A separate [Phase 1 redesign prototype](docs/studio-next/README.md) explores a
+front-facing stage editor, controller patching and reusable fixture profiles.
+It runs with simulated hardware and does not replace the installed Studio.
+The review includes navigation alternatives, proposed data contracts and a
+prioritised production plan.
+
 This fork includes upstream LedFx **2.2.1**, the latest non-prerelease release
 verified on **3 November 2026** (tag `v2.2.1`, commit
 `e25a9b52f6d6503c2f4ff000414924ce8e110b66`). It is not an official LedFx release.
