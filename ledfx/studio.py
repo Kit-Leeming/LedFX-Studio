@@ -4,11 +4,13 @@ import copy
 import json
 import os
 from pathlib import Path
+from uuid import uuid4
 
 from ledfx.api.utils import convertToJsonSchema
 from ledfx.color import validate_color, validate_gradient
 from ledfx.config import save_config
 from ledfx.effects import DummyEffect
+from ledfx.studio_workspace import pixel_count, validate_workspace
 
 COLLECTIONS = ("rigs", "themes", "effect_presets", "color_presets", "scenes")
 ROLES = ("gradient", "primary", "accent", "background")
@@ -69,6 +71,8 @@ class Studio:
         self.history = []
 
     def validate(self, data):
+        if isinstance(data, dict) and "workspace" in data:
+            validate_workspace(data["workspace"])
         if not isinstance(data, dict) or data.get("version") != 1:
             raise TypeError("Unsupported Studio library version")
         for key in (*COLLECTIONS, "assignments"):
@@ -83,6 +87,17 @@ class Studio:
                     or not item["name"].strip()
                 ):
                     raise ValueError(f"Every {collection} entry needs an ID and name")
+        if "workspace" in data:
+            workspace = data["workspace"]
+            palette_ids = [
+                workspace.get("globalPalette"),
+                *workspace["overrides"].values(),
+            ]
+            if any(
+                identifier and identifier not in data["themes"]
+                for identifier in palette_ids
+            ):
+                raise ValueError("Workspace references a missing palette")
         for theme in data["themes"].values():
             validate_gradient(theme["gradient"])
             for role in ROLES[1:]:
@@ -146,6 +161,35 @@ class Studio:
     def save_library(self, data):
         if data.get("revision") != self.data["revision"]:
             raise ValueError("Studio changed in another window. Refresh before saving.")
+        workspace = data.get("workspace")
+        if workspace is not None:
+            validate_workspace(workspace)
+            previous = {
+                light["id"]: light
+                for light in self.data.get("workspace", {}).get("lights", [])
+            }
+            for light in workspace["lights"]:
+                if (
+                    light["connection"] != "integrated"
+                    or previous.get(light["id"]) == light
+                ):
+                    continue
+                virtual = self.ledfx.virtuals.get(light["virtualId"])
+                if (
+                    not virtual
+                    or not virtual.is_device
+                    or virtual.pixel_count != pixel_count(light)
+                ):
+                    raise ValueError(
+                        f"{light['name']} requires an existing LedFX device output with the same pixel count"
+                    )
+                if (
+                    light["kind"] == "matrix"
+                    and virtual.config.get("rows", 1) != light["rows"]
+                ):
+                    raise ValueError(
+                        f"{light['name']} matrix rows do not match its LedFX output"
+                    )
         self.write(data)
 
     def snapshot(self, ids):
@@ -212,7 +256,7 @@ class Studio:
             v.virtual_cfg.clear()
             v.virtual_cfg.update(copy.deepcopy(item["saved"]))
 
-    def apply(self, changes):
+    def apply(self, changes, workspace=None):
         if not isinstance(changes, list) or not changes:
             raise ValueError("Select at least one light")
         ids = [c["id"] for c in changes]
@@ -221,6 +265,9 @@ class Studio:
         before = self.snapshot(ids)
         old_data = copy.deepcopy(self.data)
         new_data = copy.deepcopy(self.data)
+        if workspace is not None:
+            validate_workspace(workspace)
+            new_data["workspace"] = copy.deepcopy(workspace)
         prepared = []
         for change in changes:
             identifier = change["id"]
@@ -292,27 +339,39 @@ class Studio:
             raise
         self.history.append(
             {
+                "id": uuid4().hex,
                 "before": before,
                 "after": self.snapshot(ids),
                 "assignments": old_data["assignments"],
                 "after_assignments": copy.deepcopy(self.data["assignments"]),
+                "workspace": copy.deepcopy(old_data.get("workspace")),
+                "after_workspace": copy.deepcopy(self.data.get("workspace")),
             }
         )
         self.history = self.history[-30:]
 
-    def undo(self):
+    def undo(self, expected_id=None):
         if not self.history:
             raise ValueError("Nothing to undo in this server session")
         item = self.history[-1]
+        if expected_id is not None and item["id"] != expected_id:
+            raise ValueError(
+                "Another window applied a newer change. Refresh before undoing."
+            )
         if (
             self.snapshot(item["after"]) != item["after"]
             or self.data["assignments"] != item["after_assignments"]
+            or self.data.get("workspace") != item.get("after_workspace")
         ):
             raise ValueError(
                 "Lights changed elsewhere. Undo would overwrite those changes."
             )
         data = copy.deepcopy(self.data)
         data["assignments"] = item["assignments"]
+        if item.get("workspace") is not None:
+            data["workspace"] = copy.deepcopy(item["workspace"])
+        else:
+            data.pop("workspace", None)
         self.validate(data)
         self.check_overlaps(
             [

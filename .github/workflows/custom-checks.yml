@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --frozen --group dev --group build --python 3.12
-      - run: uv run --no-sync python -m unittest tests.test_studio
+      - run: uv run --no-sync python -m unittest tests.test_studio tests.test_studio_workspace
       - run: uv run --no-sync python -m pytest --noconftest tests/test_beat_scan.py tests/test_wash_inspired.py -q
       - name: Stable output and compatibility regressions
         run: >-

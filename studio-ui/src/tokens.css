@@ -1,0 +1,13 @@
+:root {
+  color-scheme: dark;
+  --bg: #10171b;
+  --panel: #171f24;
+  --surface: #222d33;
+  --input: #141c21;
+  --hover: #304039;
+  --text: #e5edf0;
+  --muted: #a6b7c2;
+  --border: #43535c;
+  --control-border: #657b87;
+  --accent: #79f2c0;
+}

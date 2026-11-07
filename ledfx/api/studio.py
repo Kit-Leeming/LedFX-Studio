@@ -18,8 +18,10 @@ class StudioEndpoint(RestEndpoint):
         return web.json_response(
             {
                 "status": "success",
+                "workspace_version": 3,
                 "library": studio.data,
                 "undo": len(studio.history),
+                "last_operation": studio.history[-1]["id"] if studio.history else None,
                 "virtuals": {
                     v.id: make_virtual_response(v)
                     for v in self._ledfx.virtuals.values()
@@ -41,9 +43,16 @@ class StudioEndpoint(RestEndpoint):
         try:
             studio = self.studio()
             if body.get("action") == "undo":
-                studio.undo()
+                studio.undo(expected_id=body.get("operation_id"))
             elif body.get("action") == "apply":
-                studio.apply(body.get("changes"))
+                if (
+                    body.get("workspace") is not None
+                    and body.get("revision") != studio.data["revision"]
+                ):
+                    raise ValueError(
+                        "Studio changed in another window. Refresh before applying."
+                    )
+                studio.apply(body.get("changes"), workspace=body.get("workspace"))
             else:
                 raise ValueError("Unknown Studio action")
             return await self.get()
